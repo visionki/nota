@@ -39,7 +39,7 @@ const schema = z.object({
   EMBEDDING_DIMENSIONS: z.coerce.number().int().min(256).max(2000).default(1536),
   EMBEDDING_ENABLED: flag.default(true),
   MAX_RUN_SECONDS: z.coerce.number().int().min(30).default(480),
-  BILLING_MODE: z.enum(['demo', 'webhook', 'disabled']).default('demo'),
+  BILLING_MODE: z.enum(['demo', 'webhook', 'disabled']).default('disabled'),
   PAYMENT_WEBHOOK_SECRET: z.string().default(''),
   ALLOW_REGISTRATION: flag.default(true),
   FFMPEG_PATH: z.string().default('ffmpeg'),

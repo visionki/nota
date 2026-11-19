@@ -1,3 +1,4 @@
+import { translate } from './locale';
 export interface LocalRecording {
   id: string;
   userId: string;
@@ -19,7 +20,8 @@ function database() {
       req.result.createObjectStore('uploads', { keyPath: 'id' });
     };
     req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(new Error('浏览器无法保存录音，请检查隐私模式或存储空间'));
+    req.onerror = () =>
+      reject(new Error(translate('浏览器无法保存录音，请检查隐私模式或存储空间')));
   }));
 }
 export async function putLocal(record: LocalRecording) {
@@ -28,7 +30,7 @@ export async function putLocal(record: LocalRecording) {
     const tx = db.transaction('uploads', 'readwrite');
     tx.objectStore('uploads').put(record);
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(new Error('录音保存失败，可能是本机存储空间不足'));
+    tx.onerror = () => reject(new Error(translate('录音保存失败，可能是本机存储空间不足')));
   });
 }
 export async function listLocal(userId: string) {

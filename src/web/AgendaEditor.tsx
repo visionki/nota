@@ -1,7 +1,8 @@
+import { translate } from './locale';
 import React, { useState } from 'react';
 import { Bell, Check, Plus, Trash2 } from 'lucide-react';
 import { api, post, patch, remove, formatDate, localInput, zonedISO } from './api';
-import { addCalendarDays, dateLabel } from '../shared/dates';
+import { addCalendarDays } from '../shared/dates';
 import { Button, Confirm, Field, Modal, useNota } from './ui';
 import type { CalendarReminder } from './calendar';
 
@@ -38,7 +39,7 @@ function PrecisionField({
   );
   return (
     <div className="agenda-precision-field">
-      <Field label={`${label}（可选）`}>
+      <Field label={translate`${label}（可选）`}>
         <input
           type={timed ? 'datetime-local' : 'date'}
           name={`${prefix}_${timed ? 'at' : 'date'}`}
@@ -62,7 +63,7 @@ function PrecisionField({
             onChange(next, next ? '' : converted);
           }}
         />
-        <span>指定{label === '计划日期' ? '执行' : '截止'}时刻</span>
+        <span>{translate(prefix === 'planned' ? '指定执行时刻' : '指定截止时刻')}</span>
       </label>
     </div>
   );
@@ -91,25 +92,29 @@ function ReminderFields({
   );
   return (
     <div className="agenda-reminder-fields">
-      <Field label={standalone ? '提醒方式' : initial ? '提醒方式' : '提醒我'}>
+      <Field
+        label={
+          standalone ? translate('提醒方式') : initial ? translate('提醒方式') : translate('提醒我')
+        }
+      >
         <select name="alert_mode" value={choice} onChange={(e) => setChoice(e.target.value)}>
-          {!standalone && !initial && <option value="none">不提醒</option>}
+          {!standalone && !initial && <option value="none">{translate('不提醒')}</option>}
           {anchors.length > 0 && (
             <>
-              <option value="0">到时提醒</option>
-              <option value="15">提前 15 分钟</option>
-              <option value="30">提前 30 分钟</option>
-              <option value="60">提前 1 小时</option>
-              <option value="1440">提前 1 天</option>
-              <option value="custom">自定义提前量</option>
+              <option value="0">{translate('到时提醒')}</option>
+              <option value="15">{translate('提前 15 分钟')}</option>
+              <option value="30">{translate('提前 30 分钟')}</option>
+              <option value="60">{translate('提前 1 小时')}</option>
+              <option value="1440">{translate('提前 1 天')}</option>
+              <option value="custom">{translate('自定义提前量')}</option>
             </>
           )}
-          <option value="absolute">固定时刻提醒</option>
+          <option value="absolute">{translate('固定时刻提醒')}</option>
         </select>
       </Field>
       {!['none', 'absolute'].includes(choice) && (
         <>
-          <Field label="提醒基准">
+          <Field label={translate('提醒基准')}>
             <select
               name="relative_to"
               defaultValue={
@@ -118,13 +123,13 @@ function ReminderFields({
             >
               {anchors.map((anchor) => (
                 <option value={anchor} key={anchor}>
-                  {anchorLabels[anchor]}
+                  {translate(anchorLabels[anchor])}
                 </option>
               ))}
             </select>
           </Field>
           {choice === 'custom' && (
-            <Field label="提前分钟数">
+            <Field label={translate('提前分钟数')}>
               <input
                 type="number"
                 name="before_minutes"
@@ -139,7 +144,7 @@ function ReminderFields({
         </>
       )}
       {choice === 'absolute' && (
-        <Field label="提醒时间">
+        <Field label={translate('提醒时间')}>
           <input
             name="remind_at"
             type="datetime-local"
@@ -155,8 +160,8 @@ function ReminderFields({
       {choice !== 'none' && (
         <p className="field-hint">
           {choice === 'absolute'
-            ? '固定时刻不随事项改期。'
-            : '事项改期后，按提前量重新计算提醒时间。'}
+            ? translate('固定时刻不随事项改期。')
+            : translate('事项改期后，按提前量重新计算提醒时间。')}
         </p>
       )}
     </div>
@@ -241,8 +246,8 @@ export function AgendaEditor({
             : [];
   const title =
     kind === 'arrangement'
-      ? '新建事项'
-      : `${edit ? '编辑' : '新建'}${subject === 'event' ? '日程' : subject === 'todo' ? '待办' : initial?.event_id || initial?.todo_id ? '提醒' : '独立提醒'}`;
+      ? translate('新建事项')
+      : `${edit ? translate('编辑') : translate('新建')}${subject === 'event' ? translate('日程') : subject === 'todo' ? translate('待办') : initial?.event_id || initial?.todo_id ? translate('提醒') : translate('独立提醒')}`;
   const start =
     initial?.starts_at && !initial?.all_day ? localInput(initial.starts_at, timezone) : '';
   const initialDate =
@@ -312,7 +317,7 @@ export function AgendaEditor({
                 { ...body, ...(alerts.length ? { add_reminders: alerts } : {}) },
               );
             return post('/arrangements', { ...body, kind: subject, reminders: alerts });
-          }, '已保存');
+          }, translate('已保存'));
           setBusy(false);
           if (result) {
             initial?.onSaved?.(
@@ -329,7 +334,7 @@ export function AgendaEditor({
         }}
       >
         {!edit && !initial?.event_id && !initial?.todo_id && (
-          <div className="agenda-type-switch" role="group" aria-label="事项类型">
+          <div className="agenda-type-switch" role="group" aria-label={translate('事项类型')}>
             {choices.map(([value, label]) => (
               <button
                 type="button"
@@ -337,21 +342,21 @@ export function AgendaEditor({
                 key={value}
                 onClick={() => setSubject(value)}
               >
-                {label}
+                {translate(label)}
               </button>
             ))}
           </div>
         )}
         <p className="field-hint agenda-type-explainer">
           {subject === 'event'
-            ? '约定发生的安排，例如聚餐、会议、已预约的看牙。'
+            ? translate('约定发生的安排，例如聚餐、会议、已预约的看牙。')
             : subject === 'todo'
-              ? '需要完成的行动，可分别设置计划日期和截止日期。'
+              ? translate('需要完成的行动，可分别设置计划日期和截止日期。')
               : initial?.event_id || initial?.todo_id
-                ? '通知设置属于原事项，不会新增一件日程或待办。'
-                : '只在指定时间通知你，例如叫醒或临时提示。'}
+                ? translate('通知设置属于原事项，不会新增一件日程或待办。')
+                : translate('只在指定时间通知你，例如叫醒或临时提示。')}
         </p>
-        <Field label="标题">
+        <Field label={translate('标题')}>
           <input name="title" required maxLength={300} defaultValue={initial?.title ?? ''} />
         </Field>
         {subject === 'event' && (
@@ -362,14 +367,14 @@ export function AgendaEditor({
                 checked={allDay}
                 onChange={(e) => setAllDay(e.target.checked)}
               />
-              <span>全天 / 仅日期</span>
+              <span>{translate('全天 / 仅日期')}</span>
             </label>
             {allDay ? (
               <div className="form-row">
-                <Field label="开始日期">
+                <Field label={translate('开始日期')}>
                   <input type="date" name="starts_on" required defaultValue={initialDate} />
                 </Field>
-                <Field label="结束日期（含当日，可选）">
+                <Field label={translate('结束日期（含当日，可选）')}>
                   <input
                     type="date"
                     name="ends_on"
@@ -379,10 +384,10 @@ export function AgendaEditor({
               </div>
             ) : (
               <div className="form-row">
-                <Field label="开始时间">
+                <Field label={translate('开始时间')}>
                   <input type="datetime-local" name="starts_at" required defaultValue={start} />
                 </Field>
-                <Field label="结束时间（可选）">
+                <Field label={translate('结束时间（可选）')}>
                   <input
                     type="datetime-local"
                     name="ends_at"
@@ -392,7 +397,7 @@ export function AgendaEditor({
                 </Field>
               </div>
             )}
-            <Field label="地点（可选）">
+            <Field label={translate('地点（可选）')}>
               <input name="location" maxLength={400} defaultValue={initial?.location ?? ''} />
             </Field>
           </>
@@ -401,7 +406,7 @@ export function AgendaEditor({
           <>
             <PrecisionField
               key="planned"
-              label="计划日期"
+              label={translate('计划日期')}
               prefix="planned"
               timezone={timezone}
               value={{
@@ -414,7 +419,7 @@ export function AgendaEditor({
               }}
             />
             {plannedTimed && (
-              <Field label="计划结束时间（可选）">
+              <Field label={translate('计划结束时间（可选）')}>
                 <input
                   type="datetime-local"
                   name="planned_end_at"
@@ -426,7 +431,7 @@ export function AgendaEditor({
             )}
             <PrecisionField
               key="due"
-              label="截止日期"
+              label={translate('截止日期')}
               prefix="due"
               timezone={timezone}
               value={{ date: initial?.due_date, at: initial?.due_at }}
@@ -438,14 +443,14 @@ export function AgendaEditor({
           </>
         )}
         {subject !== 'reminder' && (
-          <Field label="备注">
+          <Field label={translate('备注')}>
             <textarea name="notes" rows={3} maxLength={3000} defaultValue={initial?.notes ?? ''} />
           </Field>
         )}
         {subject !== 'reminder' && reminders.length > 0 && (
           <div className="agenda-existing-reminders">
             <h3>
-              <Bell size={15} /> 已有提醒
+              <Bell size={15} /> {translate('已有提醒')}
             </h3>
             {reminders.map((r) => {
               const status = cancelled.includes(r.id) ? 'cancelled' : r.status;
@@ -456,11 +461,11 @@ export function AgendaEditor({
                     <small>
                       {status === 'scheduled'
                         ? r.trigger_kind === 'relative'
-                          ? '随事项改期'
-                          : '固定时刻'
+                          ? translate('随事项改期')
+                          : translate('固定时刻')
                         : status === 'delivered'
-                          ? '已通知'
-                          : '已取消'}
+                          ? translate('已通知')
+                          : translate('已取消')}
                     </small>
                   </div>
                   {status === 'scheduled' && (
@@ -470,14 +475,17 @@ export function AgendaEditor({
                         type="button"
                         onClick={() => openCreate('reminder', { ...r, parent_item: initial })}
                       >
-                        修改
+                        {translate('修改')}
                       </button>
                       <button
                         className="icon-button"
                         type="button"
-                        aria-label={`取消提醒 ${r.title}`}
+                        aria-label={translate`取消提醒 ${r.title}`}
                         onClick={async () => {
-                          const r0 = await action(() => remove(`/reminders/${r.id}`), '提醒已取消');
+                          const r0 = await action(
+                            () => remove(`/reminders/${r.id}`),
+                            translate('提醒已取消'),
+                          );
                           if (r0) setCancelled((ids) => [...ids, r.id]);
                         }}
                       >
@@ -498,14 +506,19 @@ export function AgendaEditor({
         />
         {subject === 'todo' && edit && (
           <p className="field-hint">
-            完成待办会取消未来提醒。恢复待办后，可按需重新设置提醒；清除基准时刻会取消对应的相对提醒。
+            {translate(
+              '完成待办会取消未来提醒。恢复待办后，可按需重新设置提醒；清除基准时刻会取消对应的相对提醒。',
+            )}
           </p>
         )}
-        <p className="field-hint">时区：{timezone}</p>
+        <p className="field-hint">
+          {translate('时区：')}
+          {timezone}
+        </p>
         <footer className="modal-actions">
           {edit && subject === 'event' && (
             <Button type="button" variant="danger" onClick={() => setConfirm(true)}>
-              取消日程
+              {translate('取消日程')}
             </Button>
           )}
           {edit && subject === 'todo' && (
@@ -518,33 +531,35 @@ export function AgendaEditor({
                     patch(`/todos/${initial.id}`, {
                       status: initial.status === 'done' ? 'open' : 'done',
                     }),
-                  initial.status === 'done' ? '已恢复待办' : '已完成待办，未来提醒已取消',
+                  initial.status === 'done'
+                    ? translate('已恢复待办')
+                    : translate('已完成待办，未来提醒已取消'),
                 );
                 if (result) onClose();
               }}
             >
               <Check size={15} />
-              {initial.status === 'done' ? '恢复待办' : '完成待办'}
+              {initial.status === 'done' ? translate('恢复待办') : translate('完成待办')}
             </Button>
           )}
           <Button type="button" variant="secondary" onClick={onClose}>
-            返回
+            {translate('返回')}
           </Button>
           <Button type="submit" busy={busy}>
-            保存
+            {translate('保存')}
           </Button>
         </footer>
       </form>
       {confirm && (
         <Confirm
-          title="取消这个日程？"
-          body="未来提醒也会取消，历史记录保留。"
+          title={translate('取消这个日程？')}
+          body={translate('未来提醒也会取消，历史记录保留。')}
           danger
           onClose={() => setConfirm(false)}
           onConfirm={async () => {
             const result = await action(
               () => patch(`/calendar/${initial.id}`, { status: 'cancelled' }),
-              '日程及未来提醒已取消',
+              translate('日程及未来提醒已取消'),
             );
             if (result) onClose();
           }}

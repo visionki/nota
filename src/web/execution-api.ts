@@ -1,3 +1,4 @@
+import { translate } from './locale';
 import type { ExecutionProcessState } from '../shared/execution.js';
 import { api, ApiError } from './api';
 
@@ -34,7 +35,7 @@ export async function loadExecutionProcess(
         { signal },
       );
       if (!Array.isArray(data?.process?.entries) || !/^\d+$/.test(data.process.cursor))
-        throw new ApiError('过程记录暂时不完整，请稍后重试。', 502, 'invalid_process');
+        throw new ApiError(translate('过程记录暂时不完整，请稍后重试。'), 502, 'invalid_process');
       return data.process;
     } catch (error) {
       signal.throwIfAborted();

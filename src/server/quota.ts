@@ -16,7 +16,13 @@ export function quotaDay(date = new Date()) {
     day: '2-digit',
   }).format(date);
 }
-export async function isPro(c: Client, userId: string, now = new Date()) {
+export async function isPro(
+  c: Client,
+  userId: string,
+  billingMode: Config['BILLING_MODE'],
+  now = new Date(),
+) {
+  if (billingMode === 'disabled') return false;
   const { rows } = await c.query(
     "SELECT * FROM subscriptions WHERE user_id=$1 AND plan='pro' AND status IN ('active','trialing') AND period_end>$2",
     [userId, now],
@@ -215,7 +221,8 @@ export class Operations {
         ])
       ).rows[0];
       const exhausted =
-        !(await isPro(c, userId, now)) && q.used + q.reserved >= this.config.FREE_DAILY_LIMIT;
+        !(await isPro(c, userId, this.config.BILLING_MODE, now)) &&
+        q.used + q.reserved >= this.config.FREE_DAILY_LIMIT;
       if (exhausted && kind !== 'recording')
         throw new AppError(
           429,
@@ -295,7 +302,7 @@ export class Operations {
             [userId, day],
           )
         ).rows[0];
-        const available = (await isPro(c, userId))
+        const available = (await isPro(c, userId, this.config.BILLING_MODE))
           ? 100
           : Math.max(0, this.config.FREE_DAILY_LIMIT - quota.used - quota.reserved);
         if (!available) return;
@@ -346,13 +353,17 @@ export class Operations {
         day,
       ])
     ).rows[0] ?? { used: 0, reserved: 0 };
-    const subscription = (
-      await c.query(
-        'SELECT plan,status,period_end,cancel_at_period_end,provider FROM subscriptions WHERE user_id=$1',
-        [userId],
-      )
-    ).rows[0];
-    const pro = await isPro(c, userId);
+    const billingMode = this.config.BILLING_MODE;
+    const subscription =
+      billingMode === 'disabled'
+        ? null
+        : (
+            await c.query(
+              'SELECT plan,status,period_end,cancel_at_period_end,provider FROM subscriptions WHERE user_id=$1',
+              [userId],
+            )
+          ).rows[0];
+    const pro = await isPro(c, userId, billingMode);
     return {
       ...q,
       day,
@@ -361,7 +372,7 @@ export class Operations {
       remaining: pro ? null : Math.max(0, this.config.FREE_DAILY_LIMIT - q.used - q.reserved),
       pro,
       subscription,
-      billingMode: this.config.BILLING_MODE,
+      billingMode,
       price: '$6.99 / 月',
     };
   }

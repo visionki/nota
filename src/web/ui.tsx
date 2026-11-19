@@ -1,3 +1,4 @@
+import { translate } from './locale';
 import React, { createContext, useContext, useEffect, useRef } from 'react';
 import {
   X,
@@ -11,14 +12,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 export type View =
-  | 'chat'
-  | 'recordings'
-  | 'agenda'
-  | 'memory'
-  | 'tasks'
-  | 'notifications'
-  | 'billing'
-  | 'settings';
+  'chat' | 'recordings' | 'agenda' | 'memory' | 'tasks' | 'notifications' | 'billing' | 'settings';
 export interface NotaContext {
   user: any;
   boot: any;
@@ -130,7 +124,7 @@ export function Modal({
       >
         <header className="modal-header">
           <h2>{title}</h2>
-          <IconButton label="关闭" onClick={onClose}>
+          <IconButton label={translate('关闭')} onClick={onClose}>
             <X size={20} />
           </IconButton>
         </header>
@@ -221,7 +215,7 @@ export function Status({ value }: { value: string }) {
       ) : (
         <Clock3 size={12} />
       )}{' '}
-      {labels[value] ?? value}
+      {translate(labels[value] ?? value)}
     </span>
   );
 }
@@ -281,7 +275,7 @@ export function Confirm({
       <p className="modal-copy">{body}</p>
       <footer className="modal-actions">
         <Button variant="secondary" onClick={onClose}>
-          返回
+          {translate('返回')}
         </Button>
         <Button
           variant={danger ? 'danger' : 'primary'}
@@ -296,7 +290,7 @@ export function Confirm({
             }
           }}
         >
-          确认
+          {translate('确认')}
         </Button>
       </footer>
     </Modal>

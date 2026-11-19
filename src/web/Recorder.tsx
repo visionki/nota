@@ -1,3 +1,4 @@
+import { interfaceLocale, translate } from './locale';
 import { NOTE_INSTRUCTION, LEGACY_UPLOAD_INSTRUCTION } from '../shared/notes.js';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -12,7 +13,7 @@ import {
   LoaderCircle,
   CheckCircle2,
 } from 'lucide-react';
-import { api, duration } from './api';
+import { displayError, api, duration } from './api';
 import { Modal, Button, Field, useNota } from './ui';
 import { deleteLocal, listLocal, putLocal, type LocalRecording } from './offline';
 export function useUploadQueue(
@@ -71,14 +72,14 @@ export function useUploadQueue(
             if (identity.current?.id === id) {
               toast(
                 result.status === 'pending'
-                  ? `“${item.title}”已上传，免费额度已用完，待额度恢复后自动整理`
-                  : `“${item.title}”已加入后台整理，完成后统一汇报`,
+                  ? translate`“${item.title}”已上传，免费额度已用完，待额度恢复后自动整理`
+                  : translate`“${item.title}”已加入后台整理，完成后统一汇报`,
               );
               await refresh();
             }
           } catch (e: any) {
             await putLocal({ ...item, error: e.message, errorCode: e.code });
-            toast(e.message, true);
+            toast(displayError(e), true);
             if ([0, 401, 429, 503].includes(e.status)) break;
           }
         }
@@ -95,11 +96,11 @@ export function useUploadQueue(
       .then(() => {
         if (online) void sync();
       })
-      .catch((e) => toast(e.message, true));
+      .catch((e) => toast(displayError(e), true));
   }, [user?.id, online]);
   const add = async (item: Omit<LocalRecording, 'id' | 'userId' | 'createdAt'>) => {
     const id = identity.current?.id;
-    if (!id) throw new Error('请先登录');
+    if (!id) throw new Error(translate('请先登录'));
     await putLocal({
       ...item,
       instruction: item.instruction ?? NOTE_INSTRUCTION,
@@ -117,15 +118,15 @@ export function useUploadQueue(
         filename: file.name,
         blob: file,
       });
-      if (!connected.current) toast('录音已保存在本机，联网后上传');
+      if (!connected.current) toast(translate('录音已保存在本机，联网后上传'));
     } catch (e: any) {
-      toast(e.message, true);
+      toast(displayError(e), true);
     }
   };
   const discard = async (id: string) => {
     await deleteLocal(id);
     await load();
-    toast('已删除本机待上传录音');
+    toast(translate('已删除本机待上传录音'));
   };
   useEffect(() => {
     const reset = () => {
@@ -152,7 +153,7 @@ export function Recorder({
 }) {
   const { online, caps, user } = useNota();
   const [title, setTitle] = useState(
-      `随手记 · ${new Date().toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })}`,
+      translate`随手记 · ${new Date().toLocaleDateString(interfaceLocale(), { month: 'numeric', day: 'numeric' })}`,
     ),
     [state, setState] = useState<'idle' | 'requesting' | 'recording' | 'paused' | 'saving'>('idle'),
     [seconds, setSeconds] = useState(0),
@@ -181,10 +182,10 @@ export function Recorder({
   const save = async (blob: Blob) => {
     fallbackBlob.current = blob;
     try {
-      if (!blob.size) throw new Error('没有录到声音，请检查麦克风权限');
+      if (!blob.size) throw new Error(translate('没有录到声音，请检查麦克风权限'));
       const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm';
       await onSave({
-        title: titleRef.current.trim() || '随手记',
+        title: titleRef.current.trim() || translate('随手记'),
         filename: `recording-${Date.now()}.${ext}`,
         blob,
         recordedAt: recordedAt.current,
@@ -193,7 +194,7 @@ export function Recorder({
       fallbackBlob.current = null;
     } catch (e: any) {
       if (alive.current) {
-        setError(e.message);
+        setError(displayError(e));
         setState('idle');
       }
     }
@@ -201,7 +202,9 @@ export function Recorder({
   const begin = async () => {
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
       setError(
-        '当前浏览器不支持录音。请使用新版浏览器，并通过 HTTPS 或 localhost 打开，或直接上传文件。',
+        translate(
+          '当前浏览器不支持录音。请使用新版浏览器，并通过 HTTPS 或 localhost 打开，或直接上传文件。',
+        ),
       );
       return;
     }
@@ -231,7 +234,7 @@ export function Recorder({
       r.ondataavailable = (e) => {
         if (e.data.size) chunks.current.push(e.data);
       };
-      r.onerror = () => setError('录音被浏览器中断，正在保存已录内容');
+      r.onerror = () => setError(translate('录音被浏览器中断，正在保存已录内容'));
       r.onstop = () => {
         const blob = new Blob(chunks.current, { type: r.mimeType || mime || 'audio/webm' });
         stream.current?.getTracks().forEach((t) => t.stop());
@@ -254,8 +257,8 @@ export function Recorder({
       setState('idle');
       setError(
         e.name === 'NotAllowedError'
-          ? '麦克风权限未开启。请在浏览器地址栏允许麦克风访问，然后重试。'
-          : `无法开始录音：${e.message}`,
+          ? translate('麦克风权限未开启。请在浏览器地址栏允许麦克风访问，然后重试。')
+          : translate`无法开始录音：${e.message}`,
       );
     }
   };
@@ -276,7 +279,7 @@ export function Recorder({
     const leave = (e: BeforeUnloadEvent) => {
       if (recorder.current?.state && recorder.current.state !== 'inactive') {
         e.preventDefault();
-        e.returnValue = '录音尚未保存';
+        e.returnValue = translate('录音尚未保存');
       }
     };
     window.addEventListener('beforeunload', leave);
@@ -292,7 +295,7 @@ export function Recorder({
   const active = state === 'recording' || state === 'paused';
   return (
     <Modal
-      title="记一段声音"
+      title={translate('记一段声音')}
       onClose={() => {
         if (active) stop();
         else if (state !== 'saving' && state !== 'requesting') onClose();
@@ -300,9 +303,9 @@ export function Recorder({
     >
       <div className="recorder-content">
         <span className="eyebrow">LEAVE A NOTE FOR YOUR FUTURE SELF</span>
-        <h3>{active ? '慢慢说，我在听。' : '把此刻，留个底稿。'}</h3>
-        <p>说一条自己的备忘，结束后 Nota 会整理并执行明确交办。</p>
-        <Field label="便签标题">
+        <h3>{active ? translate('慢慢说，我在听。') : translate('把此刻，留个底稿。')}</h3>
+        <p>{translate('说一条自己的备忘，结束后 Nota 会整理并执行明确交办。')}</p>
+        <Field label={translate('便签标题')}>
           <input
             value={title}
             maxLength={200}
@@ -327,29 +330,29 @@ export function Recorder({
             {state === 'recording' ? (
               <>
                 <i className="red-dot" />
-                正在录音
+                {translate('正在录音')}
               </>
             ) : state === 'paused' ? (
-              '录音已暂停'
+              translate('录音已暂停')
             ) : state === 'saving' ? (
-              '正在安全保存录音…'
+              translate('正在安全保存录音…')
             ) : state === 'requesting' ? (
-              '等待麦克风授权…'
+              translate('等待麦克风授权…')
             ) : (
-              `单段最长 ${(caps.maxAudioSeconds ?? 600) / 60} 分钟`
+              translate`单段最长 ${(caps.maxAudioSeconds ?? 600) / 60} 分钟`
             )}
           </span>
         </div>
         {!caps.asrConfigured && (
           <div className="inline-note">
             <Clock3Icon />
-            转写服务尚未配置，录音仍可上传保留；配置后在语音便签中重试。
+            {translate('转写服务尚未配置，录音仍可上传保留；配置后在语音便签中重试。')}
           </div>
         )}
         {!online && (
           <div className="inline-note">
             <WifiOff size={16} />
-            离线录音会保存在当前浏览器，联网后上传。
+            {translate('离线录音会保存在当前浏览器，联网后上传。')}
           </div>
         )}
         {error && (
@@ -362,11 +365,11 @@ export function Recorder({
             <>
               <Button variant="secondary" onClick={pause}>
                 {state === 'paused' ? <Play size={17} /> : <Pause size={17} />}{' '}
-                {state === 'paused' ? '继续' : '暂停'}
+                {state === 'paused' ? translate('继续') : translate('暂停')}
               </Button>
               <Button onClick={stop}>
                 <Square size={16} fill="currentColor" />
-                结束并整理
+                {translate('结束并整理')}
               </Button>
             </>
           ) : (
@@ -376,28 +379,28 @@ export function Recorder({
               disabled={state === 'saving'}
             >
               <Mic size={18} />
-              开始录音
+              {translate('开始录音')}
             </Button>
           )}
         </div>
         {fallbackBlob.current && (
           <div className="recording-rescue">
-            <p>已录内容仍在本页，请先保存。</p>
+            <p>{translate('已录内容仍在本页，请先保存。')}</p>
             <Button variant="secondary" onClick={() => void save(fallbackBlob.current!)}>
-              重试保存
+              {translate('重试保存')}
             </Button>
             <a
               className="btn ghost"
               download="nota-recording.webm"
               href={URL.createObjectURL(fallbackBlob.current)}
             >
-              下载到本机
+              {translate('下载到本机')}
             </a>
           </div>
         )}
         <div className="privacy-note">
           <ShieldCheck size={15} />
-          <span>录音仅用于你的笔记和交办，存放于你的个人空间。</span>
+          <span>{translate('录音仅用于你的笔记和交办，存放于你的个人空间。')}</span>
         </div>
       </div>
     </Modal>

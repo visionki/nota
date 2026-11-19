@@ -1,3 +1,4 @@
+import { translate } from './locale';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Bell,
@@ -10,8 +11,8 @@ import {
   MapPin,
   Plus,
 } from 'lucide-react';
-import { formatDate, localInput, patch } from './api';
-import { addCalendarDays, dateLabel as shortDate } from '../shared/dates';
+import { formatCalendarDate as shortDate, formatDate, localInput, patch } from './api';
+import { addCalendarDays } from '../shared/dates';
 import { Button, IconButton, Modal, useNota } from './ui';
 import {
   calendarDays,
@@ -31,14 +32,15 @@ import {
 } from './calendar';
 import './agenda.css';
 
-const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+const weekdayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 const hourHeight = 64;
-const dateLabel = (date: string) => `${Number(date.slice(5, 7))} 月 ${Number(date.slice(8))} 日`;
+const dateLabel = (date: string) =>
+  translate`${Number(date.slice(5, 7))} 月 ${Number(date.slice(8))} 日`;
 const notificationStatus = (reminder: CalendarReminder) =>
-  reminder.status === 'delivered' ? '已通知' : '待通知';
+  reminder.status === 'delivered' ? translate('已通知') : translate('待通知');
 const segmentTime = (segment: DaySegment) =>
   segment.item.allDay
-    ? '全天'
+    ? translate('全天')
     : segment.item.endsAt
       ? `${clockTime(segment.start)}–${clockTime(segment.end)}`
       : clockTime(segment.start);
@@ -56,10 +58,10 @@ function NotificationSummary({ item }: { item: CalendarItem }) {
     return (
       <span>
         <Bell size={12} />
-        已通知
+        {translate('已通知')}
       </span>
     );
-  return <span>未设提醒</span>;
+  return <span>{translate('未设提醒')}</span>;
 }
 
 export function AgendaCalendar({
@@ -86,6 +88,7 @@ export function AgendaCalendar({
   onCancelReminder: (reminder: CalendarReminder) => void;
 }) {
   const { user, openCreate, action } = useNota();
+  const weekdays = weekdayLabels.map((label) => translate(label));
   const timezone: string = user.timezone;
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
@@ -130,18 +133,18 @@ export function AgendaCalendar({
   };
   const title =
     view === 'month'
-      ? `${selectedDate.slice(0, 4)} 年 ${Number(selectedDate.slice(5, 7))} 月`
-      : `${days[0].slice(0, 4)} 年 ${dateLabel(days[0])}–${dateLabel(days.at(-1)!)}`;
+      ? translate`${selectedDate.slice(0, 4)} 年 ${Number(selectedDate.slice(5, 7))} 月`
+      : translate`${days[0].slice(0, 4)} 年 ${dateLabel(days[0])}–${dateLabel(days.at(-1)!)}`;
   const cancelReminder = (reminder: CalendarReminder) => {
     setSelectedId(null);
     onCancelReminder(reminder);
   };
   const itemTitle = (item: CalendarItem) =>
-    `${item.placement === 'due' ? '截止 · ' : ''}${item.title}`;
+    `${item.placement === 'due' ? translate('截止 · ') : ''}${item.title}`;
   const toggleTodo = (todo: CalendarTodo) =>
     action(
       () => patch(`/todos/${todo.id}`, { status: todo.status === 'done' ? 'open' : 'done' }),
-      todo.status === 'done' ? '已恢复待办' : '已完成待办，未来提醒已取消',
+      todo.status === 'done' ? translate('已恢复待办') : translate('已完成待办，未来提醒已取消'),
     );
   const mark = (item: CalendarItem) =>
     item.kind === 'todo' ? (
@@ -164,7 +167,7 @@ export function AgendaCalendar({
             type="checkbox"
             className="agenda-task-check"
             checked={segment.item.source.status === 'done'}
-            aria-label={`${segment.item.source.status === 'done' ? '恢复' : '完成'}待办 ${segment.item.title}`}
+            aria-label={translate`${segment.item.source.status === 'done' ? translate('恢复') : translate('完成')}待办 ${segment.item.title}`}
             onChange={() => {
               if (segment.item.kind === 'todo') void toggleTodo(segment.item.source);
             }}
@@ -181,18 +184,18 @@ export function AgendaCalendar({
         className={`agenda-day-item ${segment.item.kind === 'reminder' ? 'is-point' : ''}`}
         onClick={() => selectItem(segment.item, day)}
       >
-        <time>{segment.item.allDay ? '全天' : clockTime(segment.start)}</time>
+        <time>{segment.item.allDay ? translate('全天') : clockTime(segment.start)}</time>
         <span className="agenda-day-item-content">
           <strong>{itemTitle(segment.item)}</strong>
           <span className="agenda-day-meta">
             {segment.item.kind === 'todo'
-              ? `待办 · ${segment.item.placement === 'due' ? '截止' : '计划'}`
+              ? translate`待办 · ${segment.item.placement === 'due' ? translate('截止') : translate('计划')}`
               : segment.item.kind === 'reminder'
-                ? '独立提醒'
-                : '日程'}{' '}
+                ? translate('独立提醒')
+                : translate('日程')}{' '}
             · {segmentTime(segment)}
-            {segment.continuesBefore ? ' · 接上日' : ''}
-            {segment.continuesAfter ? ' · 至次日' : ''}
+            {segment.continuesBefore ? translate(' · 接上日') : ''}
+            {segment.continuesAfter ? translate(' · 至次日') : ''}
           </span>
           <span className="agenda-day-meta">
             <NotificationSummary item={segment.item} />
@@ -203,19 +206,19 @@ export function AgendaCalendar({
   );
 
   return (
-    <section className="agenda-calendar" aria-label="安排日历" aria-busy={loading}>
+    <section className="agenda-calendar" aria-label={translate('安排日历')} aria-busy={loading}>
       <div className="agenda-calendar-toolbar">
         <div className="agenda-date-controls">
           <h2 aria-live="polite">{title}</h2>
           <div className="agenda-date-buttons">
             <IconButton
-              label={view === 'month' ? '上一月' : '上一周'}
+              label={view === 'month' ? translate('上一月') : translate('上一周')}
               onClick={() => selectDate(shiftCalendarDate(selectedDate, view, -1))}
             >
               <ChevronLeft size={18} />
             </IconButton>
             <IconButton
-              label={view === 'month' ? '下一月' : '下一周'}
+              label={view === 'month' ? translate('下一月') : translate('下一周')}
               onClick={() => selectDate(shiftCalendarDate(selectedDate, view, 1))}
             >
               <ChevronRight size={18} />
@@ -224,7 +227,7 @@ export function AgendaCalendar({
               variant="secondary"
               onClick={() => selectDate(localInput(new Date(), timezone).slice(0, 10))}
             >
-              今天
+              {translate('今天')}
             </Button>
           </div>
         </div>
@@ -235,25 +238,25 @@ export function AgendaCalendar({
               checked={showDone}
               onChange={(e) => setShowDone(e.target.checked)}
             />
-            显示已完成
+            {translate('显示已完成')}
           </label>
           <span className="agenda-timezone">
-            {timezone === 'Asia/Shanghai' ? '北京时间' : timezone}
+            {timezone === 'Asia/Shanghai' ? translate('北京时间') : timezone}
           </span>
-          <div className="agenda-view-switch" role="group" aria-label="日历视图">
+          <div className="agenda-view-switch" role="group" aria-label={translate('日历视图')}>
             <button
               type="button"
               aria-pressed={view === 'month'}
               onClick={() => onViewChange('month')}
             >
-              月视图
+              {translate('月视图')}
             </button>
             <button
               type="button"
               aria-pressed={view === 'week'}
               onClick={() => onViewChange('week')}
             >
-              周视图
+              {translate('周视图')}
             </button>
           </div>
         </div>
@@ -261,8 +264,9 @@ export function AgendaCalendar({
       {list ? (
         <div className="agenda-all-list panel">
           <p className="agenda-list-note">
-            当前{view === 'week' ? '周' : '月'}
-            的日程和待办。计划与截止跨日期时分别标注，均指向同一待办。
+            {translate('当前')}
+            {view === 'week' ? translate('周') : translate('月')}
+            {translate('的日程和待办。计划与截止跨日期时分别标注，均指向同一待办。')}
           </p>
           {days
             .filter((day) => segmentsForDay(items, day, timezone).length)
@@ -285,7 +289,7 @@ export function AgendaCalendar({
               (showDone || todo.status === 'open'),
           ) && (
             <section className="agenda-list-day">
-              <h3>未安排日期</h3>
+              <h3>{translate('未安排日期')}</h3>
               {todos
                 .filter(
                   (todo) =>
@@ -299,7 +303,7 @@ export function AgendaCalendar({
                   <div className="agenda-undated-task" key={todo.id}>
                     <input
                       type="checkbox"
-                      aria-label={`${todo.status === 'done' ? '恢复' : '完成'}待办 ${todo.title}`}
+                      aria-label={translate`${todo.status === 'done' ? translate('恢复') : translate('完成')}待办 ${todo.title}`}
                       checked={todo.status === 'done'}
                       onChange={() => void toggleTodo(todo)}
                     />
@@ -316,17 +320,17 @@ export function AgendaCalendar({
           )}
           {!items.length && !todos.length && (
             <div className="agenda-day-empty">
-              <p>还没有事项。</p>
+              <p>{translate('还没有事项。')}</p>
               <Button variant="secondary" onClick={create}>
                 <Plus size={15} />
-                添加事项
+                {translate('添加事项')}
               </Button>
             </div>
           )}
         </div>
       ) : view === 'month' ? (
         <div className="agenda-month-layout">
-          <div className="agenda-month" aria-label={`${title}月历`}>
+          <div className="agenda-month" aria-label={translate`${title}月历`}>
             <div className="agenda-month-weekdays" aria-hidden="true">
               {weekdays.map((name) => (
                 <span key={name}>{name}</span>
@@ -346,7 +350,7 @@ export function AgendaCalendar({
                       className="agenda-month-date"
                       aria-pressed={day === selectedDate}
                       aria-current={day === today ? 'date' : undefined}
-                      aria-label={`${day}，${segments.length} 项安排`}
+                      aria-label={translate`${day}，${segments.length} 项安排`}
                       onClick={() => selectDate(day)}
                     >
                       <span>{Number(day.slice(8))}</span>
@@ -372,9 +376,9 @@ export function AgendaCalendar({
                             {mark(item)}
                             <time>
                               {item.allDay
-                                ? '全天'
+                                ? translate('全天')
                                 : segment.continuesBefore
-                                  ? '延续'
+                                  ? translate('延续')
                                   : clockTime(segment.start)}
                             </time>
                             <span>{itemTitle(item)}</span>
@@ -386,9 +390,9 @@ export function AgendaCalendar({
                           type="button"
                           className="agenda-month-more"
                           onClick={() => selectDate(day)}
-                          aria-label={`查看 ${day} 全部 ${segments.length} 项安排`}
+                          aria-label={translate`查看 ${day} 全部 ${segments.length} 项安排`}
                         >
-                          还有 {segments.length - 3} 项
+                          {translate('还有')} {segments.length - 3} {translate('项')}
                         </button>
                       )}
                     </div>
@@ -397,15 +401,15 @@ export function AgendaCalendar({
               })}
             </div>
           </div>
-          <aside className="agenda-day-panel" aria-label="当天安排">
+          <aside className="agenda-day-panel" aria-label={translate('当天安排')}>
             <div className="agenda-day-heading">
               <div>
                 <h3>{dateLabel(selectedDate)}</h3>
                 <p>
-                  {weekdays[weekDay(selectedDate)]} · {daySegments.length} 项安排
+                  {weekdays[weekDay(selectedDate)]} · {daySegments.length} {translate('项安排')}
                 </p>
               </div>
-              <IconButton label="为所选日期新建安排" onClick={create}>
+              <IconButton label={translate('为所选日期新建安排')} onClick={create}>
                 <Plus size={18} />
               </IconButton>
             </div>
@@ -414,9 +418,9 @@ export function AgendaCalendar({
               {!daySegments.length && !loading && (
                 <div className="agenda-day-empty">
                   <CalendarDays size={25} strokeWidth={1.4} />
-                  <p>这一天还没有安排。</p>
+                  <p>{translate('这一天还没有安排。')}</p>
                   <button type="button" className="text-button" onClick={create}>
-                    添加一件事 <Plus size={14} />
+                    {translate('添加一件事')} <Plus size={14} />
                   </button>
                 </div>
               )}
@@ -426,7 +430,7 @@ export function AgendaCalendar({
               className="agenda-expand-week"
               onClick={() => onViewChange('week')}
             >
-              展开本周时间轴 <ChevronRight size={15} />
+              {translate('展开本周时间轴')} <ChevronRight size={15} />
             </button>
           </aside>
         </div>
@@ -436,7 +440,7 @@ export function AgendaCalendar({
             className="agenda-week-scroll"
             ref={scroll}
             role="region"
-            aria-label="每周时间安排，可上下滚动"
+            aria-label={translate('每周时间安排，可上下滚动')}
             tabIndex={0}
           >
             <div className="agenda-week-header">
@@ -449,7 +453,7 @@ export function AgendaCalendar({
                   type="button"
                   aria-pressed={day === selectedDate}
                   aria-current={day === today ? 'date' : undefined}
-                  aria-label={`选择 ${day} ${weekdays[index]}`}
+                  aria-label={translate`选择 ${day} ${weekdays[index]}`}
                   className={`${day === selectedDate ? 'is-selected' : ''} ${day === today ? 'is-today' : ''}`}
                   onClick={() => selectDate(day)}
                 >
@@ -459,7 +463,7 @@ export function AgendaCalendar({
               ))}
             </div>
             <div className="agenda-week-all-day">
-              <span className="agenda-week-zone">全天</span>
+              <span className="agenda-week-zone">{translate('全天')}</span>
               {days.map((day) => (
                 <div
                   key={day}
@@ -475,7 +479,7 @@ export function AgendaCalendar({
                         className={`agenda-month-item is-duration ${item.kind === 'todo' ? 'is-todo' : ''} ${item.kind === 'todo' && item.source.status === 'done' ? 'is-done' : ''}`}
                         key={item.id}
                         onClick={() => selectItem(item, day)}
-                        aria-label={`${day} 全天 ${itemTitle(item)}`}
+                        aria-label={translate`${day} 全天 ${itemTitle(item)}`}
                       >
                         {mark(item)}
                         <span>{itemTitle(item)}</span>
@@ -504,7 +508,7 @@ export function AgendaCalendar({
                     key={day}
                     data-date={day}
                     className={`agenda-week-column ${day === selectedDate ? 'is-selected' : ''} ${day === today ? 'is-today' : ''}`}
-                    aria-label={`${day} 的时间安排`}
+                    aria-label={translate`${day} 的时间安排`}
                   >
                     {positioned.map((segment) => (
                       <button
@@ -528,8 +532,8 @@ export function AgendaCalendar({
                         </strong>
                         <time>
                           {segmentTime(segment)}
-                          {segment.continuesBefore ? ' · 接上日' : ''}
-                          {segment.continuesAfter ? ' · 至次日' : ''}
+                          {segment.continuesBefore ? translate(' · 接上日') : ''}
+                          {segment.continuesAfter ? translate(' · 至次日') : ''}
                         </time>
                       </button>
                     ))}
@@ -537,7 +541,7 @@ export function AgendaCalendar({
                       <div
                         className="agenda-now-line"
                         style={{ top: (currentMinute / 60) * hourHeight + 12 }}
-                        aria-label={`当前时间 ${currentTime}`}
+                        aria-label={translate`当前时间 ${currentTime}`}
                       >
                         <span />
                       </div>
@@ -550,10 +554,10 @@ export function AgendaCalendar({
           <div className="agenda-week-footer">
             <span>
               {dateLabel(selectedDate)} ·{' '}
-              {daySegments.length ? `${daySegments.length} 项安排` : '暂无安排'}
+              {daySegments.length ? translate`${daySegments.length} 项安排` : translate('暂无安排')}
             </span>
             <button type="button" className="text-button" onClick={create}>
-              <Plus size={14} /> 添加安排
+              <Plus size={14} /> {translate('添加安排')}
             </button>
           </div>
         </div>
@@ -562,18 +566,18 @@ export function AgendaCalendar({
         <div className="agenda-calendar-legend">
           <span>
             <i className="agenda-duration-mark" />
-            日程
+            {translate('日程')}
           </span>
           <span>
             <Circle size={13} />
-            待办
+            {translate('待办')}
           </span>
           <span>
             <Bell size={13} />
-            独立提醒
+            {translate('独立提醒')}
           </span>
         </div>
-        <span>提醒属于事项设置，通过站内通知送达</span>
+        <span>{translate('提醒属于事项设置，通过站内通知送达')}</span>
       </div>
       {active && (
         <Modal title={active.title} onClose={() => setSelectedId(null)}>
@@ -583,19 +587,27 @@ export function AgendaCalendar({
               <div>
                 <strong>
                   {active.allDay && active.startsOn
-                    ? `${shortDate(active.startsOn)} · 全天 / 仅日期`
+                    ? translate`${shortDate(active.startsOn)} · 全天 / 仅日期`
                     : formatDate(active.startsAt, timezone)}
                 </strong>
                 {active.allDay &&
                 active.endsOn &&
                 active.startsOn &&
                 addCalendarDays(active.startsOn, 1) !== active.endsOn ? (
-                  <span>至 {shortDate(addCalendarDays(active.endsOn, -1))}</span>
+                  <span>
+                    {translate('至')} {shortDate(addCalendarDays(active.endsOn, -1))}
+                  </span>
                 ) : !active.allDay && active.endsAt ? (
-                  <span>至 {formatDate(active.endsAt, timezone)}</span>
+                  <span>
+                    {translate('至')} {formatDate(active.endsAt, timezone)}
+                  </span>
                 ) : null}
                 <small>
-                  {active.kind === 'todo' ? '待办' : active.kind === 'event' ? '日程' : '独立提醒'}{' '}
+                  {active.kind === 'todo'
+                    ? translate('待办')
+                    : active.kind === 'event'
+                      ? translate('日程')
+                      : translate('独立提醒')}{' '}
                   · {timezone}
                 </small>
               </div>
@@ -612,23 +624,23 @@ export function AgendaCalendar({
             {active.kind === 'todo' && (
               <div className="agenda-todo-detail">
                 <p>
-                  计划：
+                  {translate('计划：')}
                   {active.source.planned_date
                     ? shortDate(active.source.planned_date)
                     : active.source.planned_at
                       ? formatDate(active.source.planned_at, timezone)
-                      : '未安排'}
+                      : translate('未安排')}
                   {active.source.planned_end_at
-                    ? ` 至 ${formatDate(active.source.planned_end_at, timezone)}`
+                    ? translate` 至 ${formatDate(active.source.planned_end_at, timezone)}`
                     : ''}
                 </p>
                 <p>
-                  截止：
+                  {translate('截止：')}
                   {active.source.due_date
                     ? shortDate(active.source.due_date)
                     : active.source.due_at
                       ? formatDate(active.source.due_at, timezone)
-                      : '未设置'}
+                      : translate('未设置')}
                 </p>
                 {active.source.notes && (
                   <p className="agenda-detail-notes">{active.source.notes}</p>
@@ -638,7 +650,7 @@ export function AgendaCalendar({
             <div className="agenda-detail-reminders">
               <h3>
                 <Bell size={16} />
-                提醒设置
+                {translate('提醒设置')}
               </h3>
               {active.reminders.map((reminder) => (
                 <div className="agenda-notification" key={reminder.id}>
@@ -662,7 +674,7 @@ export function AgendaCalendar({
                             openCreate('reminder', { ...reminder, parent_item: active.source });
                           }}
                         >
-                          修改
+                          {translate('修改')}
                         </button>
                       )}
                       <button
@@ -670,13 +682,13 @@ export function AgendaCalendar({
                         className="text-button"
                         onClick={() => cancelReminder(reminder)}
                       >
-                        {active.kind === 'reminder' ? '取消安排' : '取消提醒'}
+                        {active.kind === 'reminder' ? translate('取消安排') : translate('取消提醒')}
                       </button>
                     </div>
                   )}
                 </div>
               ))}
-              {!active.reminders.length && <p className="muted">尚未设置提醒。</p>}
+              {!active.reminders.length && <p className="muted">{translate('尚未设置提醒。')}</p>}
               {(active.kind === 'event' ||
                 (active.kind === 'todo' && active.source.status === 'open')) && (
                 <button
@@ -694,13 +706,13 @@ export function AgendaCalendar({
                   }}
                 >
                   <Plus size={14} />
-                  添加提醒
+                  {translate('添加提醒')}
                 </button>
               )}
             </div>
             <footer className="modal-actions">
               <Button variant="secondary" onClick={() => setSelectedId(null)}>
-                关闭
+                {translate('关闭')}
               </Button>
               {active.kind === 'todo' && (
                 <Button
@@ -710,7 +722,7 @@ export function AgendaCalendar({
                     if (result) setSelectedId(null);
                   }}
                 >
-                  {active.source.status === 'done' ? '恢复待办' : '完成待办'}
+                  {active.source.status === 'done' ? translate('恢复待办') : translate('完成待办')}
                 </Button>
               )}
               {(active.kind !== 'reminder' || active.source.status === 'scheduled') && (
@@ -723,7 +735,12 @@ export function AgendaCalendar({
                     });
                   }}
                 >
-                  编辑{active.kind === 'todo' ? '待办' : active.kind === 'event' ? '日程' : '提醒'}
+                  {translate('编辑')}
+                  {active.kind === 'todo'
+                    ? translate('待办')
+                    : active.kind === 'event'
+                      ? translate('日程')
+                      : translate('提醒')}
                 </Button>
               )}
             </footer>

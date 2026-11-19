@@ -1,3 +1,5 @@
+import { dateLabel } from '../shared/dates';
+import { interfaceLocale, translate } from './locale';
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -6,6 +8,21 @@ export class ApiError extends Error {
   ) {
     super(message);
   }
+}
+export function displayError(error: unknown, fallback = '操作没有完成') {
+  const original = error instanceof Error ? error.message : fallback;
+  const translated = translate(original);
+  if (
+    !(error instanceof ApiError) ||
+    interfaceLocale() === 'zh-CN' ||
+    translated !== original ||
+    !/[\p{Script=Han}]/u.test(original)
+  )
+    return translated;
+  if (error.code === 'quota_exhausted')
+    return translate('今天的免费额度已用完，北京时间 00:00 重置。');
+  if (error.code === 'file_too_large') return translate('文件超过上传大小限制。');
+  return translate('无法完成请求，请检查后重试。');
 }
 export async function api<T = any>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
@@ -32,7 +49,7 @@ export async function api<T = any>(path: string, options: RequestInit = {}): Pro
       window.dispatchEvent(new Event('nota:unauthorized'));
     }
     throw new ApiError(
-      data?.error ?? '服务暂时无法处理，请稍后重试。',
+      typeof data?.error === 'string' ? data.error : '服务暂时无法处理，请稍后重试。',
       response.status,
       data?.code,
     );
@@ -49,8 +66,8 @@ export function formatDate(
   timezone = 'Asia/Shanghai',
   options: Intl.DateTimeFormatOptions = {},
 ) {
-  if (!value) return '未设置';
-  return new Date(value).toLocaleString('zh-CN', {
+  if (!value) return translate('未设置');
+  return new Date(value).toLocaleString(interfaceLocale(), {
     timeZone: timezone,
     month: 'numeric',
     day: 'numeric',
@@ -58,6 +75,12 @@ export function formatDate(
     minute: '2-digit',
     ...options,
   });
+}
+export function formatCalendarDate(value: string) {
+  if (interfaceLocale() === 'zh-CN') return dateLabel(value);
+  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(
+    new Date(`${value}T00:00:00Z`),
+  );
 }
 export function duration(n: number) {
   return `${Math.floor(n / 60)

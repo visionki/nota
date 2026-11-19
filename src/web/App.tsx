@@ -31,7 +31,7 @@ import {
   Square,
   BookOpen,
 } from 'lucide-react';
-import { api, post, ApiError, formatDate } from './api';
+import { displayError, api, post, ApiError, formatDate } from './api';
 import {
   Context,
   Button,
@@ -57,6 +57,9 @@ import { Recorder, useUploadQueue } from './Recorder';
 import { ExecutionProcess } from './ExecutionProcess';
 import { BackgroundTasksView } from './BackgroundTasksView';
 import { ChatRetry } from './ChatRetry';
+import { GmiSupport } from './GmiSupport';
+import { LanguageSelect } from './LanguageSelect';
+import { interfaceLocale, translate, useLanguage } from './locale';
 import { operationCycle } from '../shared/execution.js';
 const nav: { id: View; label: string; icon: React.ElementType }[] = [
   { id: 'chat', label: '与 Nota 对话', icon: MessageSquare },
@@ -95,14 +98,14 @@ function Login({ onLogin }: { onLogin: (user: any) => void }) {
         </a>
         <span className="eyebrow">YOUR WORDS, IN GOOD HANDS</span>
         <h1>
-          说过的话，
+          {translate('说过的话，')}
           <br />
-          都有下文。
+          {translate('都有下文。')}
         </h1>
         <p>
-          把零散的想法、重要的约定，
+          {translate('把零散的想法、重要的约定，')}
           <br />
-          留在一个记得，也会行动的地方。
+          {translate('留在一个记得，也会行动的地方。')}
         </p>
         <div className="notebook-art" aria-hidden="true">
           <div className="notebook-binding" />
@@ -111,20 +114,26 @@ function Login({ onLogin }: { onLogin: (user: any) => void }) {
           <i />
           <i />
           <div className="notebook-check">
-            <Check size={18} /> 把记忆，变成行动。
+            <Check size={18} /> {translate('把记忆，变成行动。')}
           </div>
           <div className="notebook-leaf">
             <Leaf size={64} strokeWidth={0.8} />
           </div>
         </div>
-        <footer>一个自己的语音笔记本。一个持续陪伴的 Nota。</footer>
+        <footer>{translate('一个自己的语音笔记本。一个持续陪伴的 Nota。')}</footer>
       </aside>
       <main className="login-main">
         <div className="login-box">
-          <span className="eyebrow">WELCOME TO NOTA</span>
-          <h2>{register ? '开始你的第一篇笔记' : '留一点空间，给重要的事'}</h2>
+          <div className="login-language">
+            <LanguageSelect />
+          </div>
+          <h2>
+            {register ? translate('开始你的第一篇笔记') : translate('留一点空间，给重要的事')}
+          </h2>
           <p>
-            {register ? '创建账号，拥有独立的笔记、记忆和日程。' : '登录后，从上次的话题继续。'}
+            {register
+              ? translate('创建账号，拥有独立的笔记、记忆和日程。')
+              : translate('登录后，从上次的话题继续。')}
           </p>
           <form
             onSubmit={async (e) => {
@@ -139,7 +148,7 @@ function Login({ onLogin }: { onLogin: (user: any) => void }) {
                 );
                 onLogin(r.user);
               } catch (e: any) {
-                setError(e.message);
+                setError(displayError(e));
               } finally {
                 setBusy(false);
               }
@@ -147,18 +156,18 @@ function Login({ onLogin }: { onLogin: (user: any) => void }) {
           >
             {register && (
               <label className="field">
-                <span>怎么称呼你</span>
+                <span>{translate('怎么称呼你')}</span>
                 <input
                   name="name"
                   required
                   maxLength={60}
                   autoComplete="nickname"
-                  placeholder="你的名字"
+                  placeholder={translate('你的名字')}
                 />
               </label>
             )}
             <label className="field">
-              <span>邮箱</span>
+              <span>{translate('邮箱')}</span>
               <input
                 name="email"
                 type="email"
@@ -168,7 +177,7 @@ function Login({ onLogin }: { onLogin: (user: any) => void }) {
               />
             </label>
             <label className="field">
-              <span>密码</span>
+              <span>{translate('密码')}</span>
               <input
                 name="password"
                 type="password"
@@ -176,7 +185,7 @@ function Login({ onLogin }: { onLogin: (user: any) => void }) {
                 maxLength={128}
                 required
                 autoComplete={register ? 'new-password' : 'current-password'}
-                placeholder="至少 8 位字符"
+                placeholder={translate('至少 8 位字符')}
               />
             </label>
             {error && (
@@ -185,7 +194,7 @@ function Login({ onLogin }: { onLogin: (user: any) => void }) {
               </p>
             )}
             <Button type="submit" busy={busy} className="full-width">
-              {register ? '创建账号' : '登录 Nota'}
+              {register ? translate('创建账号') : translate('登录 Nota')}
               <ChevronRight size={16} />
             </Button>
           </form>
@@ -196,17 +205,26 @@ function Login({ onLogin }: { onLogin: (user: any) => void }) {
               setError('');
             }}
           >
-            {register ? '已有账号？登录' : '第一次来？创建账号'}
+            {register ? translate('已有账号？登录') : translate('第一次来？创建账号')}
           </button>
           <div className="login-note">
-            <CheckCircle2 size={15} /> 每日 10 次免费 AI 处理 · 无需绑定支付方式
+            <CheckCircle2 size={15} /> {translate('每日 10 次免费 AI 处理 · 无需绑定支付方式')}
           </div>
+          <GmiSupport />
         </div>
       </main>
     </div>
   );
 }
 export default function App() {
+  const { locale } = useLanguage();
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.title = translate('Nota · 记得，也做到');
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute('content', translate('Nota，把说过的话，变成可追溯的记忆与行动。'));
+  }, [locale]);
   const [user, setUser] = useState<any>(null),
     [boot, setBoot] = useState<any>(null),
     [caps, setCaps] = useState<any>({}),
@@ -453,7 +471,7 @@ export default function App() {
         await refresh();
         return r;
       } catch (e: any) {
-        toast(e.message ?? '操作没有完成', true);
+        toast(displayError(e), true);
         return undefined;
       }
     },
@@ -499,7 +517,7 @@ export default function App() {
           nota<span>●</span>
         </span>
         <LoaderCircle className="spin" size={22} />
-        <p>打开你的笔记本</p>
+        <p>{translate('打开你的笔记本')}</p>
       </div>
     );
   if (!user)
@@ -512,7 +530,7 @@ export default function App() {
         }}
       />
     );
-  const today = new Date().toLocaleDateString('zh-CN', {
+  const today = new Date().toLocaleDateString(interfaceLocale(), {
     timeZone: user.timezone,
     month: 'long',
     day: 'numeric',
@@ -534,7 +552,11 @@ export default function App() {
             >
               nota<span>●</span>
             </a>
-            <IconButton label="关闭菜单" className="mobile-only" onClick={() => setMenu(false)}>
+            <IconButton
+              label={translate('关闭菜单')}
+              className="mobile-only"
+              onClick={() => setMenu(false)}
+            >
               <X size={20} />
             </IconButton>
           </div>
@@ -545,9 +567,9 @@ export default function App() {
             }}
             className="record-primary"
           >
-            <Mic size={17} /> 记一段声音 <span>＋</span>
+            <Mic size={17} /> {translate('记一段声音')} <span>＋</span>
           </Button>
-          <nav className="main-nav" aria-label="主导航">
+          <nav className="main-nav" aria-label={translate('主导航')}>
             {nav.map((n) => (
               <button
                 key={n.id}
@@ -555,9 +577,9 @@ export default function App() {
                 onClick={() => navigate(n.id)}
               >
                 <n.icon size={19} strokeWidth={1.65} />
-                <span>{n.label}</span>
+                <span>{translate(n.label)}</span>
                 {n.id === 'chat' && context.boot.read_state?.unread_count > 0 && (
-                  <b className="count" aria-label="未读对话">
+                  <b className="count" aria-label={translate('未读对话')}>
                     {context.boot.read_state.unread_count}
                   </b>
                 )}
@@ -574,7 +596,7 @@ export default function App() {
             <button className="quota-widget" onClick={() => navigate('billing')}>
               <span>
                 <Leaf size={15} />
-                {context.boot.usage.pro ? 'Nota Pro' : '今日免费额度'}
+                {context.boot.usage.pro ? 'Nota Pro' : translate('今日免费额度')}
                 <ChevronRight size={14} />
               </span>
               <div className="quota-track">
@@ -586,15 +608,17 @@ export default function App() {
               </div>
               <small>
                 {context.boot.usage.pro
-                  ? '不限 AI 处理次数'
-                  : `${context.boot.usage.used} 已用 · ${context.boot.usage.reserved} 处理中 / ${context.boot.usage.limit} 次`}
+                  ? translate('不限 AI 处理次数')
+                  : translate`${context.boot.usage.used} 已用 · ${context.boot.usage.reserved} 处理中 / ${context.boot.usage.limit} 次`}
               </small>
             </button>
             <button className="profile-button" onClick={() => navigate('settings')}>
               <span className="avatar">{user.name.slice(0, 1)}</span>
               <span>
                 <strong>{user.name}</strong>
-                <small>{context.boot.usage.pro ? 'Pro 计划' : '个人空间'}</small>
+                <small>
+                  {context.boot.usage.pro ? translate('Pro 计划') : translate('个人空间')}
+                </small>
               </span>
               <Settings size={17} />
             </button>
@@ -603,32 +627,42 @@ export default function App() {
         <div className="main-shell">
           <header className="topbar">
             <div className="topbar-left">
-              <IconButton label="打开菜单" className="mobile-only" onClick={() => setMenu(true)}>
+              <IconButton
+                label={translate('打开菜单')}
+                className="mobile-only"
+                onClick={() => setMenu(true)}
+              >
                 <Menu size={21} />
               </IconButton>
               <span className="breadcrumb">
-                我的空间 <ChevronRight size={13} />{' '}
+                {translate('我的空间')} <ChevronRight size={13} />{' '}
                 <strong>
                   {detailId
-                    ? '录音详情'
-                    : (nav.find((n) => n.id === view)?.label ??
-                      (view === 'billing' ? '订阅与额度' : '设置'))}
+                    ? translate('录音详情')
+                    : translate(
+                        nav.find((n) => n.id === view)?.label ??
+                          (view === 'billing' ? '订阅与额度' : '设置'),
+                      )}
                 </strong>
               </span>
             </div>
             <div className="topbar-right">
               <span className={`connection ${connected ? 'online' : ''}`}>
                 <i />
-                {!online || offlineIdentity ? '离线' : connected ? '实时同步' : '正在重连'}
+                {!online || offlineIdentity
+                  ? translate('离线')
+                  : connected
+                    ? translate('实时同步')
+                    : translate('正在重连')}
               </span>
-              <IconButton label="通知" onClick={() => navigate('notifications')}>
+              <IconButton label={translate('通知')} onClick={() => navigate('notifications')}>
                 <Bell size={18} />
                 {context.boot.counts.unread > 0 && <i className="notification-dot" />}
               </IconButton>
               <button
                 className="avatar small"
                 onClick={() => navigate('settings')}
-                aria-label="账户设置"
+                aria-label={translate('账户设置')}
               >
                 {user.name.slice(0, 1)}
               </button>
@@ -636,18 +670,21 @@ export default function App() {
           </header>
           {(!online || offlineIdentity) && (
             <div className="offline-banner">
-              <WifiOff size={16} /> 当前离线。你仍可录音，内容保存在本机，联网并登录后上传。
+              <WifiOff size={16} />{' '}
+              {translate('当前离线。你仍可录音，内容保存在本机，联网并登录后上传。')}
             </div>
           )}
           {view !== 'chat' && uploads.items.length > 0 && (
             <div className="upload-queue">
               <div>
                 <Upload size={16} />
-                <strong>{uploads.items.length} 段录音等待上传</strong>
+                <strong>
+                  {uploads.items.length} {translate('段录音等待上传')}
+                </strong>
                 <span>
                   {uploads.uploading
-                    ? '正在上传…'
-                    : (uploads.items[0]?.error ?? '已安全保存在当前浏览器')}
+                    ? translate('正在上传…')
+                    : (uploads.items[0]?.error ?? translate('已安全保存在当前浏览器'))}
                 </span>
               </div>
               <Button
@@ -655,9 +692,12 @@ export default function App() {
                 busy={uploads.uploading}
                 onClick={() => void uploads.sync(true)}
               >
-                重试上传
+                {translate('重试上传')}
               </Button>
-              <IconButton label="查看待上传录音" onClick={() => navigate('recordings')}>
+              <IconButton
+                label={translate('查看待上传录音')}
+                onClick={() => navigate('recordings')}
+              >
                 <ChevronRight size={16} />
               </IconButton>
             </div>
@@ -688,12 +728,12 @@ export default function App() {
             {view === 'settings' && <SettingsView />}
           </main>
         </div>
-        <nav className="mobile-nav" aria-label="手机导航">
+        <nav className="mobile-nav" aria-label={translate('手机导航')}>
           {[
             { id: 'chat', label: 'Nota', icon: MessageSquare },
-            { id: 'recordings', label: '录音', icon: AudioLines },
-            { id: 'agenda', label: '日程', icon: CalendarDays },
-            { id: 'settings', label: '我的', icon: UsersRound },
+            { id: 'recordings', label: translate('录音'), icon: AudioLines },
+            { id: 'agenda', label: locale === 'en' ? 'Calendar' : '日程', icon: CalendarDays },
+            { id: 'settings', label: translate('我的'), icon: UsersRound },
           ].map((n) => (
             <button
               key={n.id}
@@ -730,7 +770,7 @@ export default function App() {
           >
             {toastMessage.error ? <WifiOff size={17} /> : <CheckCircle2 size={17} />}
             <span>{toastMessage.text}</span>
-            <IconButton label="关闭提示" onClick={() => setToastMessage(null)}>
+            <IconButton label={translate('关闭提示')} onClick={() => setToastMessage(null)}>
               <X size={15} />
             </IconButton>
           </div>
@@ -897,7 +937,7 @@ function Chat({ today }: { today: string }) {
       boundary?.scrollIntoView({ block: 'start', behavior: 'instant' });
       await read.markRead(true);
     } catch (e: any) {
-      toast(e.message, true);
+      toast(displayError(e), true);
     } finally {
       setJumping(false);
     }
@@ -927,7 +967,7 @@ function Chat({ today }: { today: string }) {
           ?.querySelector<HTMLElement>(`[data-message-id="${CSS.escape(navigationTarget)}"]`)
           ?.scrollIntoView({ block: 'center', behavior: 'instant' });
       } catch (e: any) {
-        if (alive) toast(e.message, true);
+        if (alive) toast(displayError(e), true);
       } finally {
         if (alive) setJumping(false);
       }
@@ -1002,28 +1042,34 @@ function Chat({ today }: { today: string }) {
       await refresh();
       textarea.current?.focus();
     } catch (e: any) {
-      toast(e.message, true);
+      toast(displayError(e), true);
     } finally {
       setSending(false);
     }
   };
   return (
     <div className={`chat-layout ${started ? 'has-conversation' : 'is-empty'}`}>
-      <section className="chat-main" aria-label="Nota 对话">
+      <section className="chat-main" aria-label={translate('Nota 对话')}>
         {read.state.unread_count > 0 && (
           <div className="unread-banner" role="status">
-            <button onClick={() => void jumpUnread()} disabled={jumping} aria-label="跳转到未读">
+            <button
+              onClick={() => void jumpUnread()}
+              disabled={jumping}
+              aria-label={translate('跳转到未读')}
+            >
               <span className="unread-dot" />
-              {read.state.unread_count} 条未读消息{' '}
-              <span>{jumping ? '正在定位…' : '跳转到未读'}</span>
+              {read.state.unread_count} {translate('条未读消息')}{' '}
+              <span>{jumping ? translate('正在定位…') : translate('跳转到未读')}</span>
             </button>
             <button
-              onClick={() => void read.markRead(true).catch((e: any) => toast(e.message, true))}
+              onClick={() =>
+                void read.markRead(true).catch((e: any) => toast(displayError(e), true))
+              }
               disabled={read.busy}
-              aria-label="全部标为已读"
+              aria-label={translate('全部标为已读')}
             >
               <Check size={15} />
-              <span>标为已读</span>
+              <span>{translate('标为已读')}</span>
             </button>
           </div>
         )}
@@ -1046,8 +1092,11 @@ function Chat({ today }: { today: string }) {
           {!started && (
             <div className="chat-heading">
               <span className="eyebrow">{today}</span>
-              <h1>{user.name}，随时记下重要的事。</h1>
-              <p>我会记得上下文，也会把约定变成行动。</p>
+              <h1>
+                {user.name}
+                {translate('，随时记下重要的事。')}
+              </h1>
+              <p>{translate('我会记得上下文，也会把约定变成行动。')}</p>
             </div>
           )}
           {!started && (
@@ -1056,25 +1105,25 @@ function Chat({ today }: { today: string }) {
                 {[
                   {
                     icon: Mic,
-                    title: '整理一条便签',
-                    detail: '摘要、行动项、人物与关系',
+                    title: translate('整理一条便签'),
+                    detail: translate('摘要、行动项、人物与关系'),
                     run: record,
                   },
                   {
                     icon: CalendarDays,
-                    title: '安排接下来的事',
-                    detail: '日程、待办，还有到点提醒',
+                    title: translate('安排接下来的事'),
+                    detail: translate('日程、待办，还有到点提醒'),
                     run: () => {
-                      setText('帮我创建一个日程：');
+                      setText(translate('帮我创建一个日程：'));
                       textarea.current?.focus();
                     },
                   },
                   {
                     icon: BookOpen,
-                    title: '找回之前的细节',
-                    detail: '按人物、时间检索录音原文',
+                    title: translate('找回之前的细节'),
+                    detail: translate('按人物、时间检索录音原文'),
                     run: () => {
-                      setText('帮我查一下之前录音里提到的');
+                      setText(translate('帮我查一下之前录音里提到的'));
                       textarea.current?.focus();
                     },
                   },
@@ -1109,7 +1158,7 @@ function Chat({ today }: { today: string }) {
                   setOlder((v) => [...r.messages, ...v]);
                   setMore(r.has_before);
                 } catch (e: any) {
-                  if (!controller.signal.aborted) toast(e.message, true);
+                  if (!controller.signal.aborted) toast(displayError(e), true);
                 } finally {
                   if (historyRequest.current === controller) {
                     historyRequest.current = null;
@@ -1118,7 +1167,7 @@ function Chat({ today }: { today: string }) {
                 }
               }}
             >
-              {loadingOlder ? '正在读取…' : '查看更早的对话'}
+              {loadingOlder ? translate('正在读取…') : translate('查看更早的对话')}
             </button>
           )}
           <div className="conversation-flow" ref={flow}>
@@ -1126,8 +1175,12 @@ function Chat({ today }: { today: string }) {
               {messages.map((m: any) => (
                 <React.Fragment key={m.id}>
                   {m.id === read.dividerId && (
-                    <div className="unread-divider" role="separator" aria-label="新消息分界线">
-                      <span>以下为新消息</span>
+                    <div
+                      className="unread-divider"
+                      role="separator"
+                      aria-label={translate('新消息分界线')}
+                    >
+                      <span>{translate('以下为新消息')}</span>
                     </div>
                   )}
                   <article
@@ -1146,14 +1199,18 @@ function Chat({ today }: { today: string }) {
                       <div className="message-meta">
                         <strong>
                           {m.role === 'user'
-                            ? '你'
+                            ? translate('你')
                             : m.kind === 'reminder'
-                              ? 'Nota · 提醒'
+                              ? translate('Nota · 提醒')
                               : 'Nota'}
                         </strong>
                         <time>{formatDate(m.created_at, user.timezone)}</time>
-                        {m.kind === 'trigger' && <span className="tiny-tag">自动触发</span>}
-                        {m.kind === 'steering' && <span className="tiny-tag">补充交办</span>}
+                        {m.kind === 'trigger' && (
+                          <span className="tiny-tag">{translate('自动触发')}</span>
+                        )}
+                        {m.kind === 'steering' && (
+                          <span className="tiny-tag">{translate('补充交办')}</span>
+                        )}
                       </div>
                       {m.operation_id && m.role === 'assistant' && (
                         <ExecutionProcess
@@ -1184,7 +1241,9 @@ function Chat({ today }: { today: string }) {
                               textarea.current?.focus();
                             }}
                           >
-                            {waiting?.id === m.operation_id ? '正在补充这次交办' : '补充这次交办'}
+                            {waiting?.id === m.operation_id
+                              ? translate('正在补充这次交办')
+                              : translate('补充这次交办')}
                           </button>
                         )}
                     </div>
@@ -1206,7 +1265,7 @@ function Chat({ today }: { today: string }) {
                     });
                   }}
                 >
-                  回到最新
+                  {translate('回到最新')}
                 </button>
               </div>
             )}
@@ -1225,13 +1284,13 @@ function Chat({ today }: { today: string }) {
                       has_after: r.has_after,
                     }));
                   } catch (e: any) {
-                    toast(e.message, true);
+                    toast(displayError(e), true);
                   } finally {
                     setLoadingOlder(false);
                   }
                 }}
               >
-                查看后续对话
+                {translate('查看后续对话')}
               </button>
             )}
             {(foreground ? [foreground] : []).map((o: any) => (
@@ -1253,10 +1312,10 @@ function Chat({ today }: { today: string }) {
                   <button
                     className="text-button subtle"
                     onClick={() =>
-                      void action(() => post(`/operations/${o.id}/cancel`), '已取消任务')
+                      void action(() => post(`/operations/${o.id}/cancel`), translate('已取消任务'))
                     }
                   >
-                    停止本次任务
+                    {translate('停止本次任务')}
                   </button>
                 </div>
               </article>
@@ -1268,26 +1327,29 @@ function Chat({ today }: { today: string }) {
               <div>
                 <strong>
                   {active.filter((o: any) => o.status === 'waiting').length > 1
-                    ? '有多项交办待补充，可在对应回复下选择'
-                    : '有一个任务在等你补充'}
+                    ? translate('有多项交办待补充，可在对应回复下选择')
+                    : translate('有一个任务在等你补充')}
                 </strong>
                 <p>{(waiting.input?.title ?? waiting.input?.text ?? '').slice(0, 75)}</p>
-                <p>下方回复将继续这次任务，不会再占用一次额度。</p>
+                <p>{translate('下方回复将继续这次任务，不会再占用一次额度。')}</p>
               </div>
               <button
                 className="text-button"
                 onClick={() =>
-                  void action(() => post(`/operations/${waiting.id}/cancel`), '已取消待确认任务')
+                  void action(
+                    () => post(`/operations/${waiting.id}/cancel`),
+                    translate('已取消待确认任务'),
+                  )
                 }
               >
-                取消
+                {translate('取消')}
               </button>
             </div>
           )}
           <p className="composer-note">
             {(foreground && foreground.input?.source !== 'background_result') || waiting
-              ? '补充会继续当前交办 · 已完成的操作保留 · 不重复计次'
-              : '一个持续的对话 · 历史可复查 · AI 可能有误，请核对重要约定'}
+              ? translate('补充会继续当前交办 · 已完成的操作保留 · 不重复计次')
+              : translate('一个持续的对话 · 历史可复查 · AI 可能有误，请核对重要约定')}
           </p>
         </div>
         <div className="composer-area">
@@ -1295,7 +1357,7 @@ function Chat({ today }: { today: string }) {
             <div className="input-preview" role="status">
               <Clock3 size={15} />
               <div>
-                <strong>补充已收到，将在当前步骤后接入</strong>
+                <strong>{translate('补充已收到，将在当前步骤后接入')}</strong>
                 {pendingInputs.map((input: any) => (
                   <p key={input.id}>{input.content}</p>
                 ))}
@@ -1306,10 +1368,12 @@ function Chat({ today }: { today: string }) {
             <div className="input-preview queued-preview">
               <Clock3 size={15} />
               <div>
-                <strong>{queued.length} 项交办排队中</strong>
+                <strong>
+                  {queued.length} {translate('项交办排队中')}
+                </strong>
                 {queued.slice(0, 3).map((operation: any) => (
                   <p key={operation.id}>
-                    {operation.input?.text ?? operation.input?.title ?? '等待处理'}
+                    {operation.input?.text ?? operation.input?.title ?? translate('等待处理')}
                   </p>
                 ))}
               </div>
@@ -1324,8 +1388,12 @@ function Chat({ today }: { today: string }) {
           >
             <textarea
               ref={textarea}
-              aria-label="发送给 Nota"
-              placeholder={waiting ? '补充一下，继续这次任务…' : '说说你的想法，或者交办一件事…'}
+              aria-label={translate('发送给 Nota')}
+              placeholder={
+                waiting
+                  ? translate('补充一下，继续这次任务…')
+                  : translate('说说你的想法，或者交办一件事…')
+              }
               value={text}
               rows={1}
               maxLength={20000}
@@ -1345,7 +1413,7 @@ function Chat({ today }: { today: string }) {
             <Button
               type="submit"
               className="send-button"
-              aria-label="发送"
+              aria-label={translate('发送')}
               disabled={!text.trim()}
               busy={sending}
             >

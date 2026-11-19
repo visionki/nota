@@ -1,3 +1,4 @@
+import { translate } from './locale';
 import { localInput, zonedISO } from './api';
 
 export type CalendarView = 'month' | 'week';
@@ -262,25 +263,28 @@ export function clockTime(minute: number) {
 
 export function reminderTiming(item: CalendarItem, reminder: CalendarReminder) {
   if (reminder.trigger_kind === 'absolute' && (reminder.event_id || reminder.todo_id))
-    return '固定时刻提醒';
+    return translate('固定时刻提醒');
   if (reminder.trigger_kind === 'relative' && reminder.before_minutes != null) {
-    const anchor = { start: '开始', end: '结束', planned: '计划', due: '截止' }[
-      reminder.relative_to ?? 'start'
-    ];
+    const anchor = {
+      start: translate('开始'),
+      end: translate('结束'),
+      planned: translate('计划'),
+      due: translate('截止'),
+    }[reminder.relative_to ?? 'start'];
     const minutes = reminder.before_minutes;
-    if (minutes === 0) return `${anchor}时提醒`;
+    if (minutes === 0) return translate`${anchor}时提醒`;
     const amount =
       minutes % 1440 === 0
-        ? `${minutes / 1440} 天`
+        ? translate`${minutes / 1440} 天`
         : minutes % 60 === 0
-          ? `${minutes / 60} 小时`
-          : `${minutes} 分钟`;
-    return `${anchor}前 ${amount}提醒`;
+          ? translate`${minutes / 60} 小时`
+          : translate`${minutes} 分钟`;
+    return translate`${anchor}前 ${amount}提醒`;
   }
   const minutes = Math.round((Date.parse(item.startsAt) - Date.parse(reminder.remind_at)) / 60000);
-  if (!minutes) return '到时提醒';
-  if (minutes < 0) return '开始后提醒';
-  if (minutes % 1440 === 0) return `提前 ${minutes / 1440} 天提醒`;
-  if (minutes % 60 === 0) return `提前 ${minutes / 60} 小时提醒`;
-  return `提前 ${minutes} 分钟提醒`;
+  if (!minutes) return translate('到时提醒');
+  if (minutes < 0) return translate('开始后提醒');
+  if (minutes % 1440 === 0) return translate`提前 ${minutes / 1440} 天提醒`;
+  if (minutes % 60 === 0) return translate`提前 ${minutes / 60} 小时提醒`;
+  return translate`提前 ${minutes} 分钟提醒`;
 }

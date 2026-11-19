@@ -1,3 +1,4 @@
+import { translate } from './locale';
 import React, { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { post } from './api';
@@ -21,7 +22,7 @@ export function ChatRetry({ operationId, messageId }: { operationId: string; mes
           try {
             const result = await action(
               () => post(`/operations/${operationId}/retry`),
-              '已重新排队，保留已完成的操作',
+              translate('已重新排队，保留已完成的操作'),
             );
             if (result) window.dispatchEvent(new Event('nota:chat-retry'));
           } finally {
@@ -29,7 +30,7 @@ export function ChatRetry({ operationId, messageId }: { operationId: string; mes
           }
         }}
       >
-        <RefreshCw size={14} /> 重试这次交办
+        <RefreshCw size={14} /> {translate('重试这次交办')}
       </Button>
     </div>
   );

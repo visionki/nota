@@ -9,6 +9,7 @@ export async function testDatabase() {
     OPENAI_API_KEY: '',
     GMI_API_KEY: '',
     TAVILY_API_KEY: '',
+    BILLING_MODE: 'demo',
     DATA_DIR: '.data/tests',
   });
   const admin = new Db(source);

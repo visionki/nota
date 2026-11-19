@@ -408,7 +408,16 @@ try {
       };
     },
   );
-  await check('Demo Pro changes entitlements and cancellation preserves the period', async () => {
+  await check('Billing follows the instance policy', async () => {
+    const policy = await call(a, '/usage');
+    if (policy.billingMode !== 'demo') {
+      await assert.rejects(() => call(a, '/billing/demo-upgrade', {}), /^Error: 503:/);
+      if (policy.billingMode === 'disabled') {
+        assert.equal(policy.pro, false);
+        assert.equal(policy.subscription, null);
+      }
+      return { billingMode: policy.billingMode, demoUpgradeBlocked: true };
+    }
     const activation = await call(a, '/billing/demo-upgrade', {});
     assert.equal(activation.charged, false);
     assert.equal((await call(a, '/usage')).pro, true);

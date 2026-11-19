@@ -53,18 +53,18 @@ Vite 监听 `127.0.0.1:5179`，将 `/api` 代理给 `127.0.0.1:3031`。开发覆
 
 ## 主要配置
 
-| 变量 | 用途 |
-| --- | --- |
-| `GMI_API_KEY`、`GMI_BASE_URL`、`GMI_MODEL` | 文本推理与工具调用。默认模型为 `deepseek-ai/deepseek-v4.1-flash-1017`。 |
-| `LLM_CONTEXT_WINDOW`、`LLM_MAX_OUTPUT_TOKENS`、`LLM_COMPACT_RATIO` | 依据所选模型设置输入容量、最大输出和上下文压缩阈值。 |
-| `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`ASR_MODEL` | 音频转写，默认 `gpt-transcribe`。 |
-| `EMBEDDING_ENABLED`、`EMBEDDING_MODEL`、`EMBEDDING_DIMENSIONS` | 向量检索，默认启用 `text-embedding-3-small` 和 1536 维。可禁用向量索引并使用关键词检索。 |
-| `TAVILY_API_KEY`、`TAVILY_TIMEOUT_MS` | 可选的网页搜索与正文读取。默认超时 20 秒。 |
-| `MAX_UPLOAD_MB`、`MAX_AUDIO_SECONDS` | 默认限制为 24 MB 和 600 秒。 |
-| `WORKER_CONCURRENCY`、`BACKGROUND_WORKER_CONCURRENCY`、`FILE_WORKER_CONCURRENCY` | 主 Agent、后台查询、文件任务的并发上限。 |
-| `RECORDING_WINDOW_IDLE_MS` | 未满十条的录音窗口在成员到达终态后的等待时间，默认 1500 毫秒。 |
-| `COOKIE_SECRET`、`POSTGRES_PASSWORD`、`DATABASE_URL` | 由初始化脚本生成的私有连接和签名配置。Compose 使用容器内部数据库地址。 |
-| `BILLING_MODE`、`PAYMENT_WEBHOOK_SECRET` | 订阅模式及商户回调签名密钥。默认 `demo`，演示开通不收费。 |
+| 变量                                                                             | 用途                                                                                           |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `GMI_API_KEY`、`GMI_BASE_URL`、`GMI_MODEL`                                       | 文本推理与工具调用。默认模型为 `deepseek-ai/deepseek-v4.1-flash-1017`。                        |
+| `LLM_CONTEXT_WINDOW`、`LLM_MAX_OUTPUT_TOKENS`、`LLM_COMPACT_RATIO`               | 依据所选模型设置输入容量、最大输出和上下文压缩阈值。                                           |
+| `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`ASR_MODEL`                                 | 音频转写，默认 `gpt-transcribe`。                                                              |
+| `EMBEDDING_ENABLED`、`EMBEDDING_MODEL`、`EMBEDDING_DIMENSIONS`                   | 向量检索，默认启用 `text-embedding-3-small` 和 1536 维。可禁用向量索引并使用关键词检索。       |
+| `TAVILY_API_KEY`、`TAVILY_TIMEOUT_MS`                                            | 可选的网页搜索与正文读取。默认超时 20 秒。                                                     |
+| `MAX_UPLOAD_MB`、`MAX_AUDIO_SECONDS`                                             | 默认限制为 24 MB 和 600 秒。                                                                   |
+| `WORKER_CONCURRENCY`、`BACKGROUND_WORKER_CONCURRENCY`、`FILE_WORKER_CONCURRENCY` | 主 Agent、后台查询、文件任务的并发上限。                                                       |
+| `RECORDING_WINDOW_IDLE_MS`                                                       | 未满十条的录音窗口在成员到达终态后的等待时间，默认 1500 毫秒。                                 |
+| `COOKIE_SECRET`、`POSTGRES_PASSWORD`、`DATABASE_URL`                             | 由初始化脚本生成的私有连接和签名配置。Compose 使用容器内部数据库地址。                         |
+| `BILLING_MODE`、`PAYMENT_WEBHOOK_SECRET`                                         | 订阅模式及商户回调签名密钥。默认 `disabled`，所有账号使用免费额度。`demo` 供本地订阅测试使用。 |
 
 更改应用配置后用 `docker compose up -d` 重新加载服务。密钥只写在私有 `.env` 中。检查 Compose 时使用 `docker compose config --quiet`，避免把展开的环境变量写入终端或日志。
 

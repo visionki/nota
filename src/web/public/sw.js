@@ -1,4 +1,4 @@
-const CACHE = 'nota-static-v8';
+const CACHE = 'nota-static-v9';
 self.addEventListener('install', (event) =>
   event.waitUntil(
     (async () => {
@@ -7,7 +7,9 @@ self.addEventListener('install', (event) =>
       const html = await response.clone().text();
       await cache.put('/', response);
       const assets = [...html.matchAll(/(?:src|href)="(\/assets\/[^"#]+)"/g)].map((x) => x[1]);
-      await cache.addAll([...new Set(['/favicon.svg', '/fonts/Manrope.ttf', ...assets])]);
+      await cache.addAll([
+        ...new Set(['/favicon.svg', '/fonts/Manrope.ttf', '/brand/gmi-clouder.svg', ...assets]),
+      ]);
       self.skipWaiting();
     })(),
   ),
@@ -43,6 +45,7 @@ self.addEventListener('fetch', (event) => {
   if (
     url.pathname.startsWith('/assets/') ||
     url.pathname.startsWith('/fonts/') ||
+    url.pathname.startsWith('/brand/') ||
     url.pathname === '/favicon.svg'
   )
     event.respondWith(

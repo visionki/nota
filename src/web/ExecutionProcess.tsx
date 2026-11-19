@@ -1,3 +1,4 @@
+import { translate } from './locale';
 import React, { useEffect, useRef, useState } from 'react';
 import { Activity, ChevronDown, ChevronRight, LoaderCircle } from 'lucide-react';
 import {
@@ -10,7 +11,7 @@ import {
   type ExecutionTool,
   type ProcessSummary,
 } from '../shared/execution.js';
-import { ApiError } from './api';
+import { displayError } from './api';
 import { loadExecutionProcess } from './execution-api';
 import { Markdown, Status, useNota } from './ui';
 
@@ -19,8 +20,8 @@ function elapsed(milliseconds?: number) {
   const seconds = Math.max(0, Math.floor(milliseconds / 1000));
   if (!Number.isFinite(seconds)) return '';
   return seconds < 60
-    ? `用时 ${seconds} 秒`
-    : `用时 ${Math.floor(seconds / 60)} 分 ${seconds % 60} 秒`;
+    ? translate`用时 ${seconds} 秒`
+    : translate`用时 ${Math.floor(seconds / 60)} 分 ${seconds % 60} 秒`;
 }
 
 function StreamedText({
@@ -85,16 +86,16 @@ function ToolStep({ tool }: { tool: ExecutionTool }) {
         ) : (
           <Activity size={14} />
         )}
-        <strong>{tool.label ?? tool.name}</strong>
+        <strong>{translate(tool.label ?? tool.name)}</strong>
         <Status value={tool.status} />
         <ChevronDown size={13} />
       </summary>
       <div className="trace-detail">
-        <span className="eyebrow">调用参数</span>
+        <span className="eyebrow">{translate('调用参数')}</span>
         <pre>{JSON.stringify(tool.input ?? {}, null, 2)}</pre>
         {tool.result !== undefined && (
           <>
-            <span className="eyebrow">返回结果</span>
+            <span className="eyebrow">{translate('返回结果')}</span>
             <pre>{JSON.stringify(tool.result, null, 2)}</pre>
           </>
         )}
@@ -171,7 +172,7 @@ export function ExecutionProcess({
         setError('');
       })
       .catch((error) => {
-        if (alive) setError(error instanceof ApiError ? error.message : '暂时无法读取过程记录');
+        if (alive) setError(displayError(error, '暂时无法读取过程记录'));
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -221,17 +222,17 @@ export function ExecutionProcess({
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls={region}
-          aria-label={open ? '收起执行过程' : '展开执行过程'}
+          aria-label={open ? translate('收起执行过程') : translate('展开执行过程')}
         >
           {live ? <LoaderCircle size={14} className="spin" /> : <Activity size={14} />}
-          <span title="用时仅统计实际运行，不含排队及等待补答">
-            {live ? '正在处理' : duration || '执行过程'}
+          <span title={translate('用时仅统计实际运行，不含排队及等待补答')}>
+            {live ? translate('正在处理') : duration || translate('执行过程')}
             {toolsKnown
               ? tools > 0
-                ? ` · ${tools} 个工具步骤`
-                : ' · 未调用工具'
+                ? translate` · ${tools} 个工具步骤`
+                : translate(' · 未调用工具')
               : summary
-                ? ' · 历史统计未记录'
+                ? translate(' · 历史统计未记录')
                 : ''}
           </span>
           {live && duration && <small>{duration}</small>}
@@ -254,7 +255,11 @@ export function ExecutionProcess({
               <ToolStep key={entry.id} tool={entry} />
             ) : entry.kind === 'input' ? (
               <div className="process-input" key={entry.id}>
-                <span>{entry.status === 'applied' ? '已接入补充' : '收到补充，等待接入'}</span>
+                <span>
+                  {entry.status === 'applied'
+                    ? translate('已接入补充')
+                    : translate('收到补充，等待接入')}
+                </span>
                 <p>{entry.content}</p>
               </div>
             ) : (
@@ -268,20 +273,24 @@ export function ExecutionProcess({
             <div className="process-working" role="status">
               <span className="process-pulse" />
               {operation?.stage === 'transcribing'
-                ? '正在转写录音'
+                ? translate('正在转写录音')
                 : (process.activity ??
-                  (entries.length ? 'Nota 正在继续处理…' : '正在接收这次交办…'))}
+                  (entries.length
+                    ? translate('Nota 正在继续处理…')
+                    : translate('正在接收这次交办…')))}
             </div>
           )}
           {!live && !entries.length && !loading && !error && (
-            <p className="process-empty">这次直接生成了答复，没有调用业务工具。</p>
+            <p className="process-empty">{translate('这次直接生成了答复，没有调用业务工具。')}</p>
           )}
-          {loading && !entries.length && <p className="process-empty">正在读取过程…</p>}
+          {loading && !entries.length && (
+            <p className="process-empty">{translate('正在读取过程…')}</p>
+          )}
           {error && (
             <p className="process-error">
               {error}
               <button className="text-button" onClick={() => setRetry((value) => value + 1)}>
-                重试
+                {translate('重试')}
               </button>
             </p>
           )}

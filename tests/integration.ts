@@ -606,17 +606,77 @@ try {
       ),
     );
     assert.equal(r.length, 25);
-    assert.equal(await isPro(db, u.id), true);
+    assert.equal(await isPro(db, u.id, config.BILLING_MODE), true);
     await db.query(
       "UPDATE subscriptions SET period_end=now()-interval '1 second' WHERE user_id=$1",
       [u.id],
     );
-    assert.equal(await isPro(db, u.id), false);
+    assert.equal(await isPro(db, u.id, config.BILLING_MODE), false);
     await assert.rejects(
       () => ops.create(u.id, 'expired-pro-op', 'chat', { text: 'extra' }),
       (e: any) => e.code === 'quota_exhausted',
     );
   });
+  await check(
+    'Disabled billing preserves the ten-request limit across independent login sessions',
+    async () => {
+      const { app: publicApp } = await createApp(
+        { ...config, BILLING_MODE: 'disabled', FREE_DAILY_LIMIT: 10 },
+        db,
+      );
+      try {
+        const credentials = { email: `test-${randomUUID()}@nota.test`, password: randomUUID() };
+        const registration = await publicApp.inject({
+          method: 'POST',
+          url: '/api/auth/register',
+          payload: { ...credentials, name: 'Public quota fixture' },
+        });
+        assert.equal(registration.statusCode, 200);
+        const login = await publicApp.inject({
+          method: 'POST',
+          url: '/api/auth/login',
+          payload: credentials,
+        });
+        assert.equal(login.statusCode, 200);
+        const id = registration.json().user.id;
+        assert.equal(login.json().user.id, id);
+        const first = registration.headers['set-cookie']!.toString().split(';')[0];
+        const second = login.headers['set-cookie']!.toString().split(';')[0];
+        assert.notEqual(first, second);
+        await db.query(
+          "UPDATE subscriptions SET plan='pro',status='active',provider='demo',period_end=now()+interval '1 day' WHERE user_id=$1",
+          [id],
+        );
+        const blocked = await publicApp.inject({
+          method: 'POST',
+          url: '/api/billing/demo-upgrade',
+          headers: { cookie: second },
+        });
+        assert.equal(blocked.statusCode, 503);
+        assert.equal(blocked.json().code, 'billing_disabled');
+        const submit = (cookie?: string) =>
+          publicApp.inject({
+            method: 'POST',
+            url: '/api/chat',
+            headers: cookie ? { cookie } : {},
+            payload: { idempotency_key: randomUUID(), text: 'Public quota fixture', mode: 'queue' },
+          });
+        for (let count = 0; count < 10; count++)
+          assert.equal((await submit(first)).statusCode, 200);
+        const exhausted = await submit(second);
+        assert.equal(exhausted.statusCode, 429);
+        assert.equal(exhausted.json().code, 'quota_exhausted');
+        assert.equal((await submit()).statusCode, 401);
+        const usage = await publicApp.inject({ url: '/api/usage', headers: { cookie: second } });
+        assert.equal(usage.statusCode, 200);
+        assert.equal(usage.json().remaining, 0);
+        assert.equal(usage.json().pro, false);
+        assert.equal(usage.json().subscription, null);
+      } finally {
+        await publicApp.close();
+      }
+    },
+  );
   await check('Tool receipts replay business writes without duplicate events', async () => {
     const u = await user(),
       r = await running(u.id);
@@ -1042,9 +1102,9 @@ try {
     async () => {
       const res = (await request(b, 'POST', '/api/billing/demo-upgrade')).json();
       assert.equal(res.charged, false);
-      assert.equal(await isPro(db, b.user.id), true);
+      assert.equal(await isPro(db, b.user.id, config.BILLING_MODE), true);
       await request(b, 'POST', '/api/billing/cancel');
-      assert.equal(await isPro(db, b.user.id), true);
+      assert.equal(await isPro(db, b.user.id, config.BILLING_MODE), true);
       const secret = 'integration-webhook-secret';
       const billing = new Billing(db, {
         ...config,
@@ -1073,7 +1133,7 @@ try {
         ((await send({ ...body, id: 'older-event', version: 99, plan: 'free' })) as any).applied,
         false,
       );
-      assert.equal(await isPro(db, b.user.id), true);
+      assert.equal(await isPro(db, b.user.id, config.BILLING_MODE), true);
       await assert.rejects(
         () => billing.webhook(Buffer.from('{}'), 'invalid'),
         (e: any) => e.status === 401,

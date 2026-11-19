@@ -424,7 +424,7 @@ export async function createApp(config: Config, db = new Db(config)) {
           )
         ).rows[0];
         if (
-          !(await isPro(c, u)) &&
+          !(await isPro(c, u, config.BILLING_MODE)) &&
           quota.used + quota.reserved + roots.length > config.FREE_DAILY_LIMIT
         )
           throw new AppError(429, '免费额度不足以重试这个整理窗口', 'quota_exhausted');
@@ -459,7 +459,10 @@ export async function createApp(config: Config, db = new Db(config)) {
           day,
         ])
       ).rows[0];
-      if (!(await isPro(c, u)) && q.used + q.reserved >= config.FREE_DAILY_LIMIT)
+      if (
+        !(await isPro(c, u, config.BILLING_MODE)) &&
+        q.used + q.reserved >= config.FREE_DAILY_LIMIT
+      )
         throw new AppError(429, '今日免费额度已用完', 'quota_exhausted');
       const reserved = await c.query(
         "UPDATE quota_reservations SET quota_day=$3,status='reserved',settled_at=NULL WHERE operation_id=$1 AND user_id=$2 AND status='released' RETURNING operation_id",

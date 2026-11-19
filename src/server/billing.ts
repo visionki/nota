@@ -22,6 +22,8 @@ export class Billing {
     readonly config: Config,
   ) {}
   async demoUpgrade(userId: string) {
+    if (this.config.BILLING_MODE === 'disabled')
+      throw new AppError(503, 'Pro 计划正在开发。', 'billing_disabled');
     if (this.config.BILLING_MODE !== 'demo')
       throw new AppError(503, '当前没有配置支付商户，请配置收款服务后开通');
     return this.db.tx(async (c) => {
@@ -50,6 +52,8 @@ export class Billing {
     });
   }
   async cancel(userId: string) {
+    if (this.config.BILLING_MODE === 'disabled')
+      throw new AppError(503, 'Pro 计划正在开发。', 'billing_disabled');
     return this.db.tx(async (c) => {
       const r = await c.query(
         "UPDATE subscriptions SET cancel_at_period_end=true,version=version+1,updated_at=now() WHERE user_id=$1 AND plan='pro' RETURNING plan,status,period_end,cancel_at_period_end,provider",

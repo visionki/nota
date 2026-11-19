@@ -5697,3 +5697,65 @@ button .spin {
   margin: 10px 0;
   white-space: pre-wrap;
 }
+.language-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.language-select select {
+  min-height: 36px;
+  border-color: var(--line);
+  background: var(--surface);
+  padding: 5px 7px;
+  font-size: 12px;
+}
+.login-language {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+.language-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.gmi-support {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  min-width: 0;
+}
+.login-box > .gmi-support {
+  margin-top: 18px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+}
+.gmi-mark {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 7px 0;
+}
+.gmi-mark img {
+  display: block;
+  height: auto;
+}
+.gmi-support p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.gmi-support strong,
+.gmi-support span {
+  display: block;
+}
+.gmi-support span {
+  color: var(--muted);
+}
+.plan-card .pro-notice {
+  margin: 12px 0 0;
+  color: var(--brand-hover);
+}

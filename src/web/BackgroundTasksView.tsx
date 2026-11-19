@@ -1,6 +1,7 @@
+import { translate } from './locale';
 import React, { useEffect, useRef, useState } from 'react';
 import { Activity, ArrowUpRight, ChevronRight, Clock3, RefreshCw } from 'lucide-react';
-import { api, formatDate, post } from './api';
+import { displayError, api, formatDate, post } from './api';
 import { Button, Empty, Markdown, Status, useNota } from './ui';
 import { PageHeading, ResourceNote, useResource } from './Views';
 import { ExecutionProcess } from './ExecutionProcess';
@@ -69,7 +70,7 @@ function useTaskPage(scope: Scope) {
             error: '',
           });
       } catch (error: any) {
-        if (alive) setState((old) => ({ ...old, loading: false, error: error.message }));
+        if (alive) setState((old) => ({ ...old, loading: false, error: displayError(error) }));
       }
     })();
     return () => {
@@ -98,14 +99,14 @@ function TaskDetails({ id }: { id: string }) {
     try {
       await action(
         () => post(`/operations/${operationId}/${kind}`),
-        kind === 'retry' ? '已重新排队，保留已完成的结果' : '已停止后续处理',
+        kind === 'retry' ? translate('已重新排队，保留已完成的结果') : translate('已停止后续处理'),
       );
     } finally {
       setBusy(false);
     }
   };
   return (
-    <aside className="operation-detail panel task-detail" aria-label="后台任务详情">
+    <aside className="operation-detail panel task-detail" aria-label={translate('后台任务详情')}>
       <ResourceNote resource={r} />
       {task && data && (
         <>
@@ -113,13 +114,17 @@ function TaskDetails({ id }: { id: string }) {
             <h2>{task.title}</h2>
             <Status value={task.status} />
           </div>
-          <p className="task-stage-description">{currentStages[task.stage] ?? '正在处理'}</p>
+          <p className="task-stage-description">
+            {translate(currentStages[task.stage] ?? '正在处理')}
+          </p>
           <div className="operation-info">
-            <span>任务来源</span>
-            <strong>{task.source === 'schedule' ? '自动任务' : '外部触发'}</strong>
-            <span>开始时间</span>
+            <span>{translate('任务来源')}</span>
+            <strong>
+              {task.source === 'schedule' ? translate('自动任务') : translate('外部触发')}
+            </strong>
+            <span>{translate('开始时间')}</span>
             <strong>{formatDate(task.created_at, user.timezone)}</strong>
-            <span>最近进展</span>
+            <span>{translate('最近进展')}</span>
             <strong>{formatDate(task.updated_at, user.timezone)}</strong>
           </div>
           <ol className="task-stages">
@@ -127,7 +132,11 @@ function TaskDetails({ id }: { id: string }) {
               <li key={stage.operation_id}>
                 <div>
                   <strong>{stage.label}</strong>
-                  {stage.attempts > 1 && <small>已重试 {stage.attempts - 1} 次</small>}
+                  {stage.attempts > 1 && (
+                    <small>
+                      {translate('已重试')} {stage.attempts - 1} {translate('次')}
+                    </small>
+                  )}
                 </div>
                 <Status value={stage.status} />
               </li>
@@ -147,7 +156,7 @@ function TaskDetails({ id }: { id: string }) {
             {task.retry_operation_id && (
               <Button busy={busy} onClick={() => void mutate(task.retry_operation_id!, 'retry')}>
                 <RefreshCw size={15} />
-                {task.stage === 'delivery_failed' ? '重试交付' : '重试任务'}
+                {task.stage === 'delivery_failed' ? translate('重试交付') : translate('重试任务')}
               </Button>
             )}
             {task.reply_operation_id && (
@@ -160,12 +169,12 @@ function TaskDetails({ id }: { id: string }) {
                   });
                 }}
               >
-                回到对话补充
+                {translate('回到对话补充')}
               </Button>
             )}
             {task.message_id && !task.reply_operation_id && (
               <Button variant="secondary" onClick={() => navigate('chat', task.message_id!)}>
-                查看对话结果 <ArrowUpRight size={14} />
+                {translate('查看对话结果')} <ArrowUpRight size={14} />
               </Button>
             )}
             {task.cancel_operation_id && (
@@ -174,7 +183,9 @@ function TaskDetails({ id }: { id: string }) {
                 busy={busy}
                 onClick={() => void mutate(task.cancel_operation_id!, 'cancel')}
               >
-                {data.stages[0].status === 'succeeded' ? '停止交付' : '取消任务'}
+                {data.stages[0].status === 'succeeded'
+                  ? translate('停止交付')
+                  : translate('取消任务')}
               </Button>
             )}
             {task.schedule_id && (
@@ -182,19 +193,19 @@ function TaskDetails({ id }: { id: string }) {
                 variant="ghost"
                 onClick={() => navigate('agenda', `schedule:${task.schedule_id}`)}
               >
-                查看自动任务
+                {translate('查看自动任务')}
               </Button>
             )}
           </div>
           <details className="task-request">
-            <summary>查看交办内容</summary>
+            <summary>{translate('查看交办内容')}</summary>
             <p>{data.request}</p>
           </details>
           <details
             className="task-process"
             onToggle={(event) => setProcessOpen(event.currentTarget.open)}
           >
-            <summary>查看查询过程</summary>
+            <summary>{translate('查看查询过程')}</summary>
             {processOpen && (
               <ExecutionProcess
                 operationId={task.id}
@@ -233,7 +244,7 @@ export function BackgroundTasksView() {
         } else followOperationDestination(context, destination);
       })
       .catch((error) => {
-        if (alive) toast(error.message, true);
+        if (alive) toast(displayError(error), true);
       })
       .finally(() => {
         if (alive) setLocating(false);
@@ -246,15 +257,15 @@ export function BackgroundTasksView() {
     <div className="page-container background-tasks-page">
       <PageHeading
         eyebrow="WORKING WHILE YOU'RE AWAY"
-        title="交给 Nota，回来查看进展。"
-        description="管理自动任务和外部触发的查询，查看进展、处理阻塞或重试。"
+        title={translate('交给 Nota，回来查看进展。')}
+        description={translate('管理自动任务和外部触发的查询，查看进展、处理阻塞或重试。')}
       />
       <div className="tabs page-tabs task-tabs">
         {(
           [
-            ['current', '进行中与待处理'],
-            ['history', '历史记录'],
-            ['all', '全部任务'],
+            ['current', translate('进行中与待处理')],
+            ['history', translate('历史记录')],
+            ['all', translate('全部任务')],
           ] as const
         ).map(([value, label]) => (
           <button
@@ -270,7 +281,7 @@ export function BackgroundTasksView() {
       </div>
       <ResourceNote resource={r} />
       <div className="activity-layout">
-        <section className="operation-list panel" aria-label="后台任务列表">
+        <section className="operation-list panel" aria-label={translate('后台任务列表')}>
           {r.data?.tasks.map((task) => (
             <button
               className={`operation-row ${selected === task.id ? 'selected' : ''}`}
@@ -284,11 +295,11 @@ export function BackgroundTasksView() {
               <div>
                 <strong>{task.title}</strong>
                 <span className="task-row-progress">
-                  {currentStages[task.stage] ?? task.status}
+                  {translate(currentStages[task.stage] ?? task.status)}
                 </span>
                 <small>
                   {formatDate(task.created_at, user.timezone)} ·{' '}
-                  {task.source === 'schedule' ? '自动任务' : '外部触发'}
+                  {task.source === 'schedule' ? translate('自动任务') : translate('外部触发')}
                 </small>
               </div>
               <Status value={task.status} />
@@ -299,14 +310,16 @@ export function BackgroundTasksView() {
             <Empty
               icon={<Clock3 size={28} />}
               title={
-                scope === 'current' ? '没有正在进行或待处理的后台任务' : '暂时没有后台任务记录'
+                scope === 'current'
+                  ? translate('没有正在进行或待处理的后台任务')
+                  : translate('暂时没有后台任务记录')
               }
-              description="自动任务开始执行后，会在这里显示进展。"
+              description={translate('自动任务开始执行后，会在这里显示进展。')}
             />
           )}
           {r.data?.next_cursor && (
             <Button variant="ghost" className="task-load-more" busy={r.loading} onClick={r.more}>
-              查看更多任务
+              {translate('查看更多任务')}
             </Button>
           )}
         </section>
@@ -315,8 +328,8 @@ export function BackgroundTasksView() {
         ) : (
           <aside className="operation-detail panel execution-note">
             <Activity size={30} strokeWidth={1.2} />
-            <h3>{locating ? '正在定位任务…' : '后台的进展，在这里查看。'}</h3>
-            <p>选择一项任务，查看查询与交付进展，或处理需要你确认的事。</p>
+            <h3>{locating ? translate('正在定位任务…') : translate('后台的进展，在这里查看。')}</h3>
+            <p>{translate('选择一项任务，查看查询与交付进展，或处理需要你确认的事。')}</p>
           </aside>
         )}
       </div>
