@@ -1,0 +1,21 @@
+# Host Nginx owns HTTPS; acme.sh manages its certificates. Only the HTTP proxy is published.
+services:
+  postgres:
+    image: ${NOTA_POSTGRES_IMAGE:-nota-postgres:local}
+  migrate:
+    image: ${NOTA_APP_IMAGE:-nota-app:local}
+  api:
+    image: ${NOTA_APP_IMAGE:-nota-app:local}
+  worker:
+    image: ${NOTA_APP_IMAGE:-nota-app:local}
+  task-worker:
+    image: ${NOTA_APP_IMAGE:-nota-app:local}
+  file-worker:
+    image: ${NOTA_APP_IMAGE:-nota-app:local}
+  web:
+    environment:
+      SITE_ADDRESS: ':80'
+    ports: !override
+      - '127.0.0.1:${NOTA_HTTP_PORT:-18088}:80'
+    volumes:
+      - './deploy/Caddyfile:/etc/caddy/Caddyfile:ro'

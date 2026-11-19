@@ -1,0 +1,15 @@
+{$SITE_ADDRESS::80} {
+  encode zstd gzip
+  request_body {
+    max_size 25MB
+  }
+  reverse_proxy api:3031 {
+    flush_interval -1
+  }
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy same-origin
+    Permissions-Policy "microphone=(self)"
+    -Server
+  }
+}

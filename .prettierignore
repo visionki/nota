@@ -1,0 +1,12 @@
+.agents
+prototype
+node_modules
+dist
+.data
+.env*
+test-results
+playwright-report
+pnpm-lock.yaml
+*.wav
+*.webm
+*.ttf

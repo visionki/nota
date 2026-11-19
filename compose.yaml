@@ -1,0 +1,147 @@
+name: nota
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    image: nota-postgres:local
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nota
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: nota
+    volumes: ['nota-db:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nota -d nota']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  migrate:
+    build: .
+    image: nota-app:local
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://nota:${POSTGRES_PASSWORD}@postgres:5432/nota
+      DATA_DIR: /app/.data
+    command: ['node', 'dist/server/migrate.js']
+    depends_on:
+      postgres: { condition: service_healthy }
+    volumes: ['nota-data:/app/.data']
+  api:
+    build: .
+    image: nota-app:local
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3031
+      FFMPEG_PATH: ffmpeg
+      FFPROBE_PATH: ffprobe
+      DATABASE_URL: postgresql://nota:${POSTGRES_PASSWORD}@postgres:5432/nota
+      DATA_DIR: /app/.data
+    command: ['node', 'dist/server/index.js']
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    volumes: ['nota-data:/app/.data']
+    init: true
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3031/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  worker:
+    image: nota-app:local
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      WORKER_ROLE: agent
+      DATABASE_URL: postgresql://nota:${POSTGRES_PASSWORD}@postgres:5432/nota
+      DATA_DIR: /app/.data
+      FFMPEG_PATH: ffmpeg
+      FFPROBE_PATH: ffprobe
+    command: ['node', 'dist/server/worker.js']
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    volumes: ['nota-data:/app/.data']
+    init: true
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    healthcheck:
+      test: ['CMD', 'node', 'dist/server/worker-health.js']
+      interval: 20s
+      timeout: 5s
+      retries: 5
+  task-worker:
+    image: nota-app:local
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      WORKER_ROLE: tasks
+      DATABASE_URL: postgresql://nota:${POSTGRES_PASSWORD}@postgres:5432/nota
+      DATA_DIR: /app/.data
+    command: ['node', 'dist/server/worker.js']
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    volumes: ['nota-data:/app/.data']
+    init: true
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    healthcheck:
+      test: ['CMD', 'node', 'dist/server/worker-health.js']
+      interval: 20s
+      timeout: 5s
+      retries: 5
+  file-worker:
+    image: nota-app:local
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      WORKER_ROLE: files
+      DATABASE_URL: postgresql://nota:${POSTGRES_PASSWORD}@postgres:5432/nota
+      DATA_DIR: /app/.data
+      FFMPEG_PATH: ffmpeg
+      FFPROBE_PATH: ffprobe
+    command: ['node', 'dist/server/worker.js']
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    volumes: ['nota-data:/app/.data']
+    init: true
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    healthcheck:
+      test: ['CMD', 'node', 'dist/server/worker-health.js']
+      interval: 20s
+      timeout: 5s
+      retries: 5
+  web:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports: ['${HTTP_PORT:-8088}:80', '${HTTPS_PORT:-8448}:443']
+    volumes:
+      ['./Caddyfile:/etc/caddy/Caddyfile:ro', 'nota-caddy-data:/data', 'nota-caddy-config:/config']
+    depends_on:
+      api: { condition: service_healthy }
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://127.0.0.1:2019/config/']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+volumes:
+  nota-db:
+  nota-data:
+  nota-caddy-data:
+  nota-caddy-config:

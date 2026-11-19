@@ -1,0 +1,11 @@
+FROM postgres:17-alpine AS vector-build
+ARG PGVECTOR_VERSION=v0.8.7
+RUN apk add --no-cache build-base curl \
+ && curl -fL --retry 3 "https://github.com/pgvector/pgvector/archive/refs/tags/${PGVECTOR_VERSION}.tar.gz" -o /tmp/vector.tar.gz \
+ && mkdir /tmp/vector \
+ && tar -xzf /tmp/vector.tar.gz -C /tmp/vector --strip-components=1 \
+ && make -C /tmp/vector with_llvm=no OPTFLAGS='-O2' \
+ && make -C /tmp/vector with_llvm=no OPTFLAGS='-O2' install DESTDIR=/out
+
+FROM postgres:17-alpine
+COPY --from=vector-build /out/ /

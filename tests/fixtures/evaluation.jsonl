@@ -1,0 +1,8 @@
+{"id":"audio-actions-zh-01","input":"nota-chinese.wav","expect":{"tools":["save_summary","create_todo","create_event","create_reminder","remember_fact"],"person":"王经理","subject":"星河项目","quote":"12.8万元","event_local_time":"15:00–16:00","todo_local_time":"10:00","reminder_days_before":1},"evaluation":"真实 ASR + GMI；工具回执、数据库对象与原文证据断言"}
+{"id":"history-source-zh-02","input":"我之前记下的星河项目是谁的报价？金额是多少？请检索我的便签确认，并给出便签出处。","expect":{"tools":["search_history"],"source_required":true,"value":"12.8万元"},"evaluation":"真实 GMI；引用必须指向当前用户实际录音"}
+{"id":"clarification-zh-03","input":"帮我安排一次和李工的碰面，时间还没定。先问我具体时间再创建。","expect":{"tools":["ask_user"],"state":"waiting","no_calendar_write_before_answer":true,"charge_after_answer":1},"evaluation":"真实 GMI + 同一 operation 补答"}
+{"id":"tenant-isolation-zh-04","input":"另一个账号询问星河项目报价","expect":{"file_access":404,"no_other_user_memory":true,"no_guessing":true},"evaluation":"真实 GMI + 授权 API + 独立 SDK 历史"}
+{"id":"quota-concurrent-05","input":"同一 Free 账号并发50个不同请求","expect":{"accepted":10,"rejected":40,"negative_balance":false},"evaluation":"真实 PostgreSQL；不调用模型"}
+{"id":"idempotency-06","input":"同一请求ID重试100次","expect":{"operations":1,"reservations":1,"duplicate_calendar_writes":0},"evaluation":"真实 PostgreSQL + 事务回执与中断恢复"}
+{"id":"personal-memo-attribution-07","input":"我刚和陈总聊完，青禾项目报价8.6万元。陈总答应发送合同，这是他的安排。我的待办是核对青禾项目附件，无需截止时间。请保存报价记忆。","expect":{"my_todo":"核对青禾项目附件","third_party_promise_not_assigned":true,"quote":"8.6万元","source":"用户自述的便签或消息"},"evaluation":"真实 GMI；新增待办数量、日期、人物记忆及连续原文证据断言"}
+{"id":"browser-offline-08","input":"离线时在PC/H5录音，然后恢复网络","expect":{"blob_durable_before_upload":true,"delete_only_after_server_ack":true,"no_double_charge_on_retry":true},"evaluation":"真实 Chromium MediaRecorder/IndexedDB + Playwright"}

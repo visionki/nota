@@ -1,0 +1,967 @@
+{
+  "description": "Synthetic Chinese cases and actual model/persistence outputs captured before the lifecycle implementation. Scenario pass rate is not general extraction accuracy.",
+  "at": "2026-11-13T02:19:59.849Z",
+  "model": "deepseek-ai/deepseek-v4.1-flash-1017",
+  "cases": [
+    {
+      "id": "simple_quote",
+      "input": "陈总明确告诉我，青禾项目报价8.6万元。",
+      "recorded_at": "2026-11-10T16:30:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "result": {
+        "summary": "陈总明确告知：青禾项目报价为8.6万元。",
+        "facts": [
+          {
+            "subject": "陈总",
+            "predicate": "告知",
+            "value": "青禾项目报价8.6万元",
+            "evidence": "陈总明确告诉我，青禾项目报价8.6万元。",
+            "person_name": "陈总",
+            "effective_at": null
+          },
+          {
+            "subject": "青禾项目",
+            "predicate": "报价",
+            "value": "8.6万元",
+            "evidence": "陈总明确告诉我，青禾项目报价8.6万元。",
+            "effective_at": null
+          }
+        ],
+        "actions": [],
+        "uncertainties": ["“陈总”未提供全名或具体身份。", "报价未明确币种，原文仅写“8.6万元”。"]
+      },
+      "persisted_facts": [
+        {
+          "subject": "陈总",
+          "predicate": "告知",
+          "value": "青禾项目报价8.6万元",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": "a743c13f-26c7-44c6-9515-a7ebe225557b",
+          "status": "active"
+        },
+        {
+          "subject": "青禾项目",
+          "predicate": "报价",
+          "value": "8.6万元",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": null,
+          "status": "active"
+        }
+      ],
+      "persisted_people": [
+        {
+          "id": "a743c13f-26c7-44c6-9515-a7ebe225557b",
+          "name": "陈总",
+          "organization": "",
+          "identity_confirmed": false
+        }
+      ],
+      "persisted_candidates": [
+        {
+          "subject": "青禾项目",
+          "predicate": "报价",
+          "value": "8.6万元",
+          "person_name": null,
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "陈总",
+          "predicate": "告知",
+          "value": "青禾项目报价8.6万元",
+          "person_name": "陈总",
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "negation_and_correction",
+      "input": "不是王经理负责青禾项目，是李工负责。之前说的12.8万元报价作废，最新报价为11.6万元。",
+      "recorded_at": "2026-11-10T16:30:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "result": {
+        "summary": "便签更正了青禾项目负责人：不是王经理，而是李工；同时作废此前12.8万元报价，最新报价为11.6万元。",
+        "facts": [
+          {
+            "subject": "王经理",
+            "predicate": "负责青禾项目",
+            "value": "否",
+            "evidence": "不是王经理负责青禾项目",
+            "person_name": "王经理",
+            "effective_at": null
+          },
+          {
+            "subject": "李工",
+            "predicate": "负责青禾项目",
+            "value": "是",
+            "evidence": "是李工负责。",
+            "person_name": "李工",
+            "effective_at": null
+          },
+          {
+            "subject": "12.8万元报价",
+            "predicate": "状态",
+            "value": "作废",
+            "evidence": "之前说的12.8万元报价作废",
+            "effective_at": null
+          },
+          {
+            "subject": "最新报价",
+            "predicate": "金额",
+            "value": "11.6万元",
+            "evidence": "最新报价为11.6万元。",
+            "effective_at": null
+          }
+        ],
+        "actions": [],
+        "uncertainties": [
+          "“之前说的12.8万元报价”和“最新报价”的具体报价日期或生效时间未说明，需确认。",
+          "王经理、李工的全名及具体身份未说明。"
+        ]
+      },
+      "persisted_facts": [
+        {
+          "subject": "12.8万元报价",
+          "predicate": "状态",
+          "value": "作废",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": null,
+          "status": "active"
+        },
+        {
+          "subject": "王经理",
+          "predicate": "负责青禾项目",
+          "value": "否",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": "6d05e22c-82c8-480a-857b-c7a999baef31",
+          "status": "active"
+        },
+        {
+          "subject": "最新报价",
+          "predicate": "金额",
+          "value": "11.6万元",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": null,
+          "status": "active"
+        },
+        {
+          "subject": "李工",
+          "predicate": "负责青禾项目",
+          "value": "是",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": "73768eea-1ef8-434d-ba90-7d3be9a31cec",
+          "status": "active"
+        }
+      ],
+      "persisted_people": [
+        {
+          "id": "6d05e22c-82c8-480a-857b-c7a999baef31",
+          "name": "王经理",
+          "organization": "",
+          "identity_confirmed": false
+        },
+        {
+          "id": "73768eea-1ef8-434d-ba90-7d3be9a31cec",
+          "name": "李工",
+          "organization": "",
+          "identity_confirmed": false
+        }
+      ],
+      "persisted_candidates": [
+        {
+          "subject": "王经理",
+          "predicate": "负责青禾项目",
+          "value": "否",
+          "person_name": "王经理",
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "最新报价",
+          "predicate": "金额",
+          "value": "11.6万元",
+          "person_name": null,
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "李工",
+          "predicate": "负责青禾项目",
+          "value": "是",
+          "person_name": "李工",
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "12.8万元报价",
+          "predicate": "状态",
+          "value": "作废",
+          "person_name": null,
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "same_name_two_organizations",
+      "input": "甲公司的王伟负责采购，乙公司的王伟负责法务，他们是两个人。",
+      "recorded_at": "2026-11-10T16:30:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "result": {
+        "summary": "便签区分了两位同名王伟：甲公司的王伟负责采购，乙公司的王伟负责法务，二者是不同的人。",
+        "facts": [
+          {
+            "subject": "王伟",
+            "predicate": "负责",
+            "value": "采购",
+            "evidence": "甲公司的王伟负责采购",
+            "person_name": "王伟",
+            "organization": "甲公司",
+            "effective_at": null
+          },
+          {
+            "subject": "王伟",
+            "predicate": "负责",
+            "value": "法务",
+            "evidence": "乙公司的王伟负责法务",
+            "person_name": "王伟",
+            "organization": "乙公司",
+            "effective_at": null
+          },
+          {
+            "subject": "甲公司的王伟和乙公司的王伟",
+            "predicate": "身份关系",
+            "value": "两个人（不同个体）",
+            "evidence": "他们是两个人",
+            "effective_at": null
+          }
+        ],
+        "actions": [],
+        "uncertainties": []
+      },
+      "persisted_facts": [
+        {
+          "subject": "王伟",
+          "predicate": "负责",
+          "value": "法务",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": null,
+          "status": "active"
+        },
+        {
+          "subject": "甲公司的王伟和乙公司的王伟",
+          "predicate": "身份关系",
+          "value": "两个人（不同个体）",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": null,
+          "status": "active"
+        },
+        {
+          "subject": "王伟",
+          "predicate": "负责",
+          "value": "采购",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": "6dddfb30-f9f1-438f-b42b-ed56fbb07f0c",
+          "status": "active"
+        }
+      ],
+      "persisted_people": [
+        {
+          "id": "6dddfb30-f9f1-438f-b42b-ed56fbb07f0c",
+          "name": "王伟",
+          "organization": "甲公司",
+          "identity_confirmed": false
+        }
+      ],
+      "persisted_candidates": [
+        {
+          "subject": "甲公司的王伟和乙公司的王伟",
+          "predicate": "身份关系",
+          "value": "两个人（不同个体）",
+          "person_name": null,
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "王伟",
+          "predicate": "负责",
+          "value": "法务",
+          "person_name": "王伟",
+          "organization": "乙公司",
+          "status": "needs_identity",
+          "comparison": {
+            "identity_note": "同名人物尚未确认，未自动合并",
+            "related_facts": [
+              {
+                "id": "d54cc96e-c92c-47c9-91e3-95fbb0b6ee83",
+                "value": "采购",
+                "evidence": "甲公司的王伟负责采购",
+                "message_id": null,
+                "effective_at": "2026-11-10T08:30:00Z",
+                "recording_id": "43d0a8e1-d8e4-4672-90b3-67cc43a2eeb8"
+              }
+            ],
+            "changed_values": [
+              {
+                "id": "d54cc96e-c92c-47c9-91e3-95fbb0b6ee83",
+                "value": "采购",
+                "evidence": "甲公司的王伟负责采购",
+                "message_id": null,
+                "effective_at": "2026-11-10T08:30:00Z",
+                "recording_id": "43d0a8e1-d8e4-4672-90b3-67cc43a2eeb8"
+              }
+            ],
+            "possible_people": [
+              {
+                "id": "6dddfb30-f9f1-438f-b42b-ed56fbb07f0c",
+                "name": "王伟",
+                "aliases": [],
+                "organization": "甲公司",
+                "identity_confirmed": false
+              }
+            ]
+          }
+        },
+        {
+          "subject": "王伟",
+          "predicate": "负责",
+          "value": "采购",
+          "person_name": "王伟",
+          "organization": "甲公司",
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "question_and_uncertainty",
+      "input": "王经理是不是在海星公司？我不确定，别当成事实。",
+      "recorded_at": "2026-11-10T16:30:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "result": {
+        "summary": "便签仅询问王经理是否在海星公司，并明确表示不确定、不要当成事实；未提取到可确认的人物关系或重要事实。",
+        "facts": [],
+        "actions": [],
+        "uncertainties": ["王经理是否在海星公司不确定；原文明确说“我不确定，别当成事实”。"]
+      },
+      "persisted_facts": [],
+      "persisted_people": [],
+      "persisted_candidates": []
+    },
+    {
+      "id": "known_recording_relative_time",
+      "input": "昨天李工加入青禾项目。明天下午三点提醒我联系李工。",
+      "recorded_at": "2026-11-10T16:30:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "result": {
+        "summary": "录制于2026-11-10 16:30（Asia/Shanghai）。便签记录：昨天李工加入青禾项目；明天下午三点提醒我联系李工。",
+        "facts": [
+          {
+            "subject": "李工",
+            "predicate": "加入",
+            "value": "青禾项目",
+            "evidence": "昨天李工加入青禾项目。",
+            "person_name": "李工",
+            "effective_at": null
+          }
+        ],
+        "actions": [
+          {
+            "kind": "reminder",
+            "title": "联系李工",
+            "evidence": "明天下午三点提醒我联系李工。",
+            "actor": "self",
+            "explicit": true,
+            "time_expression": "明天下午三点",
+            "details": "提醒我联系李工"
+          }
+        ],
+        "uncertainties": [
+          "李工在青禾项目中的具体角色未说明。",
+          "事实发生日期“昨天”按录制时间可推算为2026-11-09，但原文未给出具体时刻，effective_at留空。"
+        ]
+      },
+      "persisted_facts": [
+        {
+          "subject": "李工",
+          "predicate": "加入",
+          "value": "青禾项目",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": "fe11c59b-0409-4307-ab2b-ff4330673f49",
+          "status": "active"
+        }
+      ],
+      "persisted_people": [
+        {
+          "id": "fe11c59b-0409-4307-ab2b-ff4330673f49",
+          "name": "李工",
+          "organization": "",
+          "identity_confirmed": false
+        }
+      ],
+      "persisted_candidates": [
+        {
+          "subject": "李工",
+          "predicate": "加入",
+          "value": "青禾项目",
+          "person_name": "李工",
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "third_party_promise",
+      "input": "陈总答应下周发合同，这是他的安排，不要给我创建发送合同的待办。我的待办是核对附件。",
+      "recorded_at": "2026-11-10T16:30:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "result": {
+        "summary": "陈总答应下周发合同，这是他的安排；我的待办是核对附件，不创建发送合同的待办。",
+        "facts": [
+          {
+            "subject": "陈总",
+            "predicate": "答应发合同",
+            "value": "下周发合同",
+            "evidence": "陈总答应下周发合同",
+            "person_name": "陈总",
+            "effective_at": null
+          },
+          {
+            "subject": "我",
+            "predicate": "待办",
+            "value": "核对附件",
+            "evidence": "我的待办是核对附件",
+            "effective_at": null
+          },
+          {
+            "subject": "我",
+            "predicate": "明确要求",
+            "value": "不要创建发送合同的待办",
+            "evidence": "不要给我创建发送合同的待办",
+            "effective_at": null
+          }
+        ],
+        "actions": [
+          {
+            "kind": "todo",
+            "title": "核对附件",
+            "evidence": "我的待办是核对附件",
+            "actor": "self",
+            "explicit": true,
+            "details": "仅核对附件；发送合同是陈总的安排，不创建为我的待办。"
+          }
+        ],
+        "uncertainties": [
+          "“下周”是相对时间表达，合同发送的具体日期需确认。",
+          "合同的具体内容和发送方式未说明。"
+        ]
+      },
+      "persisted_facts": [
+        {
+          "subject": "陈总",
+          "predicate": "答应发合同",
+          "value": "下周发合同",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": "3b315a65-4127-4317-8090-0bd448787461",
+          "status": "active"
+        },
+        {
+          "subject": "我",
+          "predicate": "明确要求",
+          "value": "不要创建发送合同的待办",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": null,
+          "status": "active"
+        },
+        {
+          "subject": "我",
+          "predicate": "待办",
+          "value": "核对附件",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": null,
+          "status": "active"
+        }
+      ],
+      "persisted_people": [
+        {
+          "id": "3b315a65-4127-4317-8090-0bd448787461",
+          "name": "陈总",
+          "organization": "",
+          "identity_confirmed": false
+        }
+      ],
+      "persisted_candidates": [
+        {
+          "subject": "我",
+          "predicate": "明确要求",
+          "value": "不要创建发送合同的待办",
+          "person_name": null,
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "陈总",
+          "predicate": "答应发合同",
+          "value": "下周发合同",
+          "person_name": "陈总",
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "我",
+          "predicate": "待办",
+          "value": "核对附件",
+          "person_name": null,
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "unknown_recording_relative_time",
+      "input": "昨天李工加入青禾项目。明天下午三点提醒我联系李工。",
+      "recorded_at": null,
+      "timezone": null,
+      "result": {
+        "summary": "便签记录：李工昨天加入青禾项目；并设置提醒，明天下午三点联系李工。因录制时间未知，相关日期需确认。",
+        "facts": [
+          {
+            "subject": "李工",
+            "predicate": "加入",
+            "value": "青禾项目",
+            "evidence": "昨天李工加入青禾项目。",
+            "person_name": "李工",
+            "effective_at": null
+          }
+        ],
+        "actions": [
+          {
+            "kind": "reminder",
+            "title": "联系李工",
+            "evidence": "明天下午三点提醒我联系李工。",
+            "actor": "self",
+            "explicit": true,
+            "time_expression": "明天下午三点",
+            "uncertainty": "录制时间未知，'明天下午三点'的具体日期需确认；时区未知。",
+            "details": "提醒我联系李工"
+          }
+        ],
+        "uncertainties": [
+          "录制时间未知，'昨天'和'明天下午三点'对应的具体日期需确认。",
+          "时区未知，提醒时间未带时区。"
+        ]
+      },
+      "persisted_facts": [
+        {
+          "subject": "李工",
+          "predicate": "加入",
+          "value": "青禾项目",
+          "effective_at": null,
+          "person_id": "03564ab3-5d36-48e2-ba2c-59f4d5433014",
+          "status": "active"
+        }
+      ],
+      "persisted_people": [
+        {
+          "id": "03564ab3-5d36-48e2-ba2c-59f4d5433014",
+          "name": "李工",
+          "organization": "",
+          "identity_confirmed": false
+        }
+      ],
+      "persisted_candidates": [
+        {
+          "subject": "李工",
+          "predicate": "加入",
+          "value": "青禾项目",
+          "person_name": "李工",
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "hypothetical_relation",
+      "input": "如果李工以后加入青禾公司，我会让他负责采购。目前这只是设想，还没有发生。",
+      "recorded_at": "2026-11-10T16:30:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "result": {
+        "summary": "这是一条条件性设想：如果李工以后加入青禾公司，口述者会让他负责采购；目前该安排尚未发生，仅为设想。",
+        "facts": [
+          {
+            "subject": "李工",
+            "predicate": "加入青禾公司",
+            "value": "尚未发生，仅为条件性设想",
+            "evidence": "如果李工以后加入青禾公司，我会让他负责采购。目前这只是设想，还没有发生。",
+            "person_name": "李工",
+            "organization": "青禾公司",
+            "effective_at": null
+          },
+          {
+            "subject": "我",
+            "predicate": "安排李工负责采购",
+            "value": "以李工以后加入青禾公司为条件；目前仅为设想，尚未发生",
+            "evidence": "如果李工以后加入青禾公司，我会让他负责采购。目前这只是设想，还没有发生。",
+            "person_name": "李工",
+            "organization": "青禾公司",
+            "effective_at": null
+          }
+        ],
+        "actions": [],
+        "uncertainties": [
+          "李工是否加入青禾公司尚未发生，仅为设想",
+          "采购职责安排是否实施取决于上述条件，未确认",
+          "“以后”为模糊时间表达，具体时间需确认"
+        ]
+      },
+      "persisted_facts": [
+        {
+          "subject": "我",
+          "predicate": "安排李工负责采购",
+          "value": "以李工以后加入青禾公司为条件；目前仅为设想，尚未发生",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": null,
+          "status": "active"
+        },
+        {
+          "subject": "李工",
+          "predicate": "加入青禾公司",
+          "value": "尚未发生，仅为条件性设想",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": "a22cda3d-9dbd-4f33-abbb-d4b90d1981be",
+          "status": "active"
+        }
+      ],
+      "persisted_people": [
+        {
+          "id": "a22cda3d-9dbd-4f33-abbb-d4b90d1981be",
+          "name": "李工",
+          "organization": "青禾公司",
+          "identity_confirmed": false
+        }
+      ],
+      "persisted_candidates": [
+        {
+          "subject": "李工",
+          "predicate": "加入青禾公司",
+          "value": "尚未发生，仅为条件性设想",
+          "person_name": "李工",
+          "organization": "青禾公司",
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "我",
+          "predicate": "安排李工负责采购",
+          "value": "以李工以后加入青禾公司为条件；目前仅为设想，尚未发生",
+          "person_name": "李工",
+          "organization": "青禾公司",
+          "status": "needs_identity",
+          "comparison": {
+            "identity_note": "同名人物尚未确认，未自动合并",
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": [
+              {
+                "id": "a22cda3d-9dbd-4f33-abbb-d4b90d1981be",
+                "name": "李工",
+                "aliases": [],
+                "organization": "青禾公司",
+                "identity_confirmed": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "chat_memory_opt_out",
+      "input": "不要提取或保存人物记忆，只用于本轮回答。陈总说青禾项目报价8.6万元。",
+      "recorded_at": "2026-11-10T16:30:00+08:00",
+      "timezone": null,
+      "result": {
+        "summary": "原文包含一条人物记忆处理限制：不要提取或保存人物记忆，只用于本轮回答；另转述青禾项目报价为8.6万元。",
+        "facts": [
+          {
+            "subject": "人物记忆",
+            "predicate": "处理限制",
+            "value": "不要提取或保存，只用于本轮回答",
+            "evidence": "不要提取或保存人物记忆，只用于本轮回答。",
+            "effective_at": null
+          },
+          {
+            "subject": "青禾项目",
+            "predicate": "报价",
+            "value": "8.6万元",
+            "evidence": "陈总说青禾项目报价8.6万元。",
+            "effective_at": null
+          }
+        ],
+        "actions": [],
+        "uncertainties": [
+          "报价8.6万元的币种、是否含税、有效期及生效时间未说明。",
+          "“陈总”仅为口述中提及的人物，未提供更多身份信息；按原文限制不提取或保存人物记忆。"
+        ]
+      },
+      "persisted_facts": [
+        {
+          "subject": "青禾项目",
+          "predicate": "报价",
+          "value": "8.6万元",
+          "effective_at": "2026-11-13T02:22:26.367Z",
+          "person_id": null,
+          "status": "active"
+        },
+        {
+          "subject": "人物记忆",
+          "predicate": "处理限制",
+          "value": "不要提取或保存，只用于本轮回答",
+          "effective_at": "2026-11-13T02:22:26.367Z",
+          "person_id": null,
+          "status": "active"
+        }
+      ],
+      "persisted_people": [],
+      "persisted_candidates": [
+        {
+          "subject": "人物记忆",
+          "predicate": "处理限制",
+          "value": "不要提取或保存，只用于本轮回答",
+          "person_name": null,
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "青禾项目",
+          "predicate": "报价",
+          "value": "8.6万元",
+          "person_name": null,
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "multiple_people_shared_quote",
+      "input": "王经理和李经理都确认青禾项目报价8.6万元。",
+      "recorded_at": "2026-11-10T16:30:00+08:00",
+      "timezone": "Asia/Shanghai",
+      "result": {
+        "summary": "王经理和李经理均确认青禾项目报价为8.6万元；未提及人物关系或其他行动事项。",
+        "facts": [
+          {
+            "subject": "王经理",
+            "predicate": "确认",
+            "value": "青禾项目报价8.6万元",
+            "evidence": "王经理和李经理都确认青禾项目报价8.6万元。",
+            "person_name": "王经理",
+            "organization": null,
+            "effective_at": null
+          },
+          {
+            "subject": "李经理",
+            "predicate": "确认",
+            "value": "青禾项目报价8.6万元",
+            "evidence": "王经理和李经理都确认青禾项目报价8.6万元。",
+            "person_name": "李经理",
+            "organization": null,
+            "effective_at": null
+          },
+          {
+            "subject": "青禾项目",
+            "predicate": "报价",
+            "value": "8.6万元",
+            "evidence": "王经理和李经理都确认青禾项目报价8.6万元。",
+            "person_name": null,
+            "organization": null,
+            "effective_at": null
+          }
+        ],
+        "actions": [],
+        "uncertainties": [
+          "王经理、李经理的具体身份及所属组织未说明。",
+          "报价确认的具体日期未明确；录制时间不等同于确认时间，相关日期需确认。"
+        ]
+      },
+      "persisted_facts": [
+        {
+          "subject": "李经理",
+          "predicate": "确认",
+          "value": "青禾项目报价8.6万元",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": "0a61e2a1-b728-4d5c-a1a3-7394f5b35a47",
+          "status": "active"
+        },
+        {
+          "subject": "王经理",
+          "predicate": "确认",
+          "value": "青禾项目报价8.6万元",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": "361875ec-8665-4289-aeb1-9fc277e7be43",
+          "status": "active"
+        },
+        {
+          "subject": "青禾项目",
+          "predicate": "报价",
+          "value": "8.6万元",
+          "effective_at": "2026-11-10T08:30:00Z",
+          "person_id": null,
+          "status": "active"
+        }
+      ],
+      "persisted_people": [
+        {
+          "id": "0a61e2a1-b728-4d5c-a1a3-7394f5b35a47",
+          "name": "李经理",
+          "organization": "",
+          "identity_confirmed": false
+        },
+        {
+          "id": "361875ec-8665-4289-aeb1-9fc277e7be43",
+          "name": "王经理",
+          "organization": "",
+          "identity_confirmed": false
+        }
+      ],
+      "persisted_candidates": [
+        {
+          "subject": "王经理",
+          "predicate": "确认",
+          "value": "青禾项目报价8.6万元",
+          "person_name": "王经理",
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "李经理",
+          "predicate": "确认",
+          "value": "青禾项目报价8.6万元",
+          "person_name": "李经理",
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        },
+        {
+          "subject": "青禾项目",
+          "predicate": "报价",
+          "value": "8.6万元",
+          "person_name": null,
+          "organization": null,
+          "status": "resolved",
+          "comparison": {
+            "identity_note": null,
+            "related_facts": [],
+            "changed_values": [],
+            "possible_people": []
+          }
+        }
+      ]
+    }
+  ]
+}
