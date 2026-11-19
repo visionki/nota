@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createHmac } from 'node:crypto';
+import { resolve } from 'node:path';
 import { quotaDay } from '../src/server/quota.js';
 import { compactionSettings } from '../src/server/agent.js';
 import { verifyWebhook } from '../src/server/billing.js';
@@ -69,8 +70,9 @@ describe('Persistent context configuration', () => {
 describe('Private storage', () => {
   const storage = new Storage(loadConfig({ COOKIE_SECRET: 'a'.repeat(32) }));
   it('rejects traversal and absolute outside paths', () => {
+    const outsidePath = resolve(storage.root, '..', 'outside.wav');
     expect(() => storage.path('../../.env')).toThrow();
-    expect(() => storage.path('C:/Windows/system.ini')).toThrow();
+    expect(() => storage.path(outsidePath)).toThrow();
     expect(() => storage.path('')).toThrow();
   });
   it('accepts an owned generated key', () => {
